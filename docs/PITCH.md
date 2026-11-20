@@ -1,5 +1,9 @@
 # QuoteSentry 一页纸与路演大纲
 
+> 成品：[A4 一页纸 PDF](../demo/QuoteSentry-one-pager.pdf) · [PNG 预览](../demo/QuoteSentry-one-pager.png) · [可编辑源文件](../pitch/index.html)
+>
+> PDF 已确认严格 1 页；所有客户、SKU、价格和询价均为仿真数据。
+
 ## 定位
 
 **QuoteSentry（报价哨兵）是面向中国高混紧固件外贸商的询价审单 Agent。**

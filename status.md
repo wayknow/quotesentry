@@ -15,7 +15,7 @@
 | 自动化测试 | ✅ 31 个测试通过 |
 | DeepSeek 实调用 | ✅ 服务端直连 smoke 已通过 |
 | wayknow 部署 | ⏳ 未执行；按 deploy.md 手工接入 |
-| 比赛录屏/路演材料 | 🟡 演示视频已完成；一页纸待设计 |
+| 比赛录屏/路演材料 | ✅ 演示视频、SRT、A4 一页纸均已完成 |
 
 ## ✅ Done
 
@@ -35,6 +35,7 @@
 - 完成 1440px 桌面浏览器渲染检查。
 - 写好 `docs/DEMO.md` 演示 Runbook、演示前检查、故障兜底和 `docs/PITCH.md` 路演大纲。
 - 完成 3 分 34 秒中文旁白演示视频：`demo/QuoteSentry-demo-zh.mp4`，并附 SRT 字幕。
+- 完成 A4 单页路演稿：`demo/QuoteSentry-one-pager.pdf`，并用 Quick Look 确认严格 1 页、无裁切；PNG 预览为 `demo/QuoteSentry-one-pager.png`。
 
 ## 验证结果
 
@@ -61,14 +62,14 @@ npm run build    ✅
 
 ## 🚧 In Progress
 
-- 将 `docs/PITCH.md` 设计成最终一页纸。
+- 无。
 
 ## ⏳ Pending
 
 | 任务 | 完成定义 |
 |---|---|
 | wayknow 子路径 | 先本地 `VITE_BASE_PATH=/quotesentry/` 验证，再改 Nginx |
-| 路演材料 | 将 `docs/PITCH.md` 定稿；不宣称真实客户 ROI，明确仿真数据和规则口径 |
+| 现场彩排 | 用一页纸 + 录屏完成一次 3–5 分钟讲解，确认节奏、追问和故障兜底 |
 
 ## ⚠️ Risks
 
@@ -83,6 +84,5 @@ npm run build    ✅
 
 ## 下一步
 
-1. 将 `docs/PITCH.md` 设计成最终一页纸，明确仿真数据、规则口径和 agent 边界。
-2. 用录制视频做一次正式彩排，确认 3–5 分钟讲解节奏。
-3. 确认是否接入 `work/wayknow` 的 `/quotesentry/` 子目录；未确认前不修改站点。
+1. 用 `demo/QuoteSentry-one-pager.pdf` 和录制视频做一次正式彩排，确认 3–5 分钟讲解节奏。
+2. 确认是否接入 `work/wayknow` 的 `/quotesentry/` 子目录；未确认前不修改站点。

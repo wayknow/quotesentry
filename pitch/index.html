@@ -1,0 +1,470 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>QuoteSentry 一页纸</title>
+  <style>
+    :root {
+      --ink: #10221d;
+      --muted: #52635e;
+      --line: #d9e1dc;
+      --paper: #f4f7f3;
+      --panel: #ffffff;
+      --teal: #0a6b53;
+      --mint: #51d4a8;
+      --amber: #b77209;
+      --red: #a33b2f;
+      --sans: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; background: #dfe6e1; }
+    body { font-family: var(--sans); color: var(--ink); -webkit-font-smoothing: antialiased; }
+
+    @page { size: A4; margin: 0; }
+
+    .sheet {
+      width: 210mm;
+      height: 297mm;
+      margin: 12mm auto;
+      padding: 8mm;
+      background: var(--paper);
+      display: flex;
+      flex-direction: column;
+      gap: 3mm;
+      overflow: hidden;
+      box-shadow: 0 18px 60px rgba(13, 45, 36, .2);
+      position: relative;
+      print-color-adjust: exact;
+      -webkit-print-color-adjust: exact;
+    }
+
+    .sheet::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background-image:
+        linear-gradient(rgba(10, 107, 83, .035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(10, 107, 83, .035) 1px, transparent 1px);
+      background-size: 12mm 12mm;
+      mask-image: linear-gradient(to bottom, black, transparent 85%);
+    }
+
+    .hero {
+      position: relative;
+      min-height: 0;
+      border-radius: 3mm;
+      padding: 5mm 6mm 4.5mm;
+      color: #fff;
+      background:
+        radial-gradient(circle at 83% 12%, rgba(85, 224, 178, .26), transparent 30%),
+        linear-gradient(125deg, #062a23 0%, #07533f 58%, #0b6f55 100%);
+      display: grid;
+      grid-template-columns: 1.28fr .72fr;
+      gap: 5mm;
+      overflow: hidden;
+    }
+
+    .hero::after {
+      content: "QS";
+      position: absolute;
+      right: -4mm;
+      bottom: -19mm;
+      font-size: 105pt;
+      line-height: 1;
+      font-weight: 800;
+      letter-spacing: -.1em;
+      color: rgba(255, 255, 255, .035);
+    }
+
+    .eyebrow {
+      font-size: 6.8pt;
+      letter-spacing: .16em;
+      font-weight: 700;
+      color: var(--mint);
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 2mm 0 1.5mm;
+      font-size: 23pt;
+      line-height: 1.01;
+      letter-spacing: -.04em;
+      font-weight: 800;
+    }
+
+    h1 span { color: var(--mint); }
+
+    .hero-sub {
+      margin: 0;
+      max-width: 108mm;
+      font-size: 8.7pt;
+      line-height: 1.45;
+      color: rgba(255,255,255,.82);
+    }
+
+    .hero-tagline {
+      margin-top: 2.6mm;
+      font-size: 10.5pt;
+      font-weight: 700;
+      letter-spacing: .02em;
+    }
+
+    .badges { display: flex; flex-wrap: wrap; gap: 1.2mm; margin-top: 2.8mm; }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 1.2mm;
+      padding: .9mm 1.8mm;
+      border: 1px solid rgba(255,255,255,.2);
+      border-radius: 99px;
+      color: rgba(255,255,255,.8);
+      font-size: 6.2pt;
+      letter-spacing: .03em;
+    }
+    .badge::before { content: ""; width: 1.4mm; height: 1.4mm; border-radius: 50%; background: var(--mint); }
+
+    .hero-proof {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      gap: 1.6mm;
+    }
+
+    .hero-stat {
+      display: grid;
+      grid-template-columns: 15mm 1fr;
+      align-items: baseline;
+      gap: 2.2mm;
+      padding: 1.8mm 0;
+      border-top: 1px solid rgba(255,255,255,.16);
+    }
+
+    .hero-stat strong { font-size: 14pt; line-height: 1; letter-spacing: -.03em; }
+    .hero-stat span { font-size: 6.6pt; color: rgba(255,255,255,.7); line-height: 1.3; }
+    .hero-stat em { color: var(--mint); font-style: normal; }
+
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1.18fr .82fr;
+      gap: 3mm;
+      min-height: 0;
+      flex: 1;
+    }
+
+    .column { display: flex; flex-direction: column; gap: 3mm; min-width: 0; }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 2.5mm;
+      padding: 3.4mm;
+      position: relative;
+    }
+
+    .section-head { display: flex; align-items: baseline; justify-content: space-between; gap: 3mm; margin-bottom: 1.8mm; }
+    .section-kicker { font-size: 6pt; color: var(--teal); letter-spacing: .14em; font-weight: 800; }
+    h2 { margin: 0; font-size: 11.8pt; letter-spacing: -.02em; line-height: 1.18; }
+    .section-note { font-size: 6.1pt; color: var(--muted); }
+
+    .problem-copy { margin: 0; font-size: 7.6pt; line-height: 1.48; color: #2f423c; }
+    .problem-copy strong { color: var(--ink); }
+
+    .pain-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5mm; margin-top: 2mm; }
+    .pain {
+      padding: 1.5mm 1.5mm;
+      border-radius: 1.8mm;
+      background: #fff6ea;
+      border: 1px solid #f0dcc2;
+      font-size: 6.7pt;
+      font-weight: 700;
+      color: #774d0c;
+      text-align: center;
+    }
+
+    .flow {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.2mm;
+    }
+    .flow-step {
+      min-height: 9mm;
+      padding: 1.6mm;
+      border-radius: 1.7mm;
+      background: #edf8f3;
+      border: 1px solid #c7e8da;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .flow-step b { font-size: 6.7pt; line-height: 1.26; }
+    .flow-step span { font-size: 5.4pt; color: #60766f; }
+    .flow-step i { font-style: normal; font-size: 5.2pt; color: var(--teal); font-weight: 800; letter-spacing: .08em; }
+
+    .boundary-row { display: flex; flex-wrap: wrap; gap: 1.2mm; margin-top: 2mm; }
+    .boundary {
+      padding: 1mm 1.6mm;
+      border-radius: 99px;
+      background: #eef3f0;
+      color: #3e534c;
+      font-size: 5.8pt;
+      font-weight: 600;
+    }
+
+    .shot-card { padding: 0; overflow: hidden; background: #e7eeea; }
+    .shot-head {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 2.2mm 3.2mm 1.8mm; background: #fff; border-bottom: 1px solid var(--line);
+    }
+    .shot-head span { font-size: 5.8pt; color: var(--muted); letter-spacing: .04em; }
+    .shot-head strong { font-size: 6.5pt; color: var(--teal); }
+    .shot-card img { display: block; width: 100%; height: 54mm; object-fit: cover; object-position: top; }
+    .shot-foot { padding: 1.8mm 3.2mm; background: #0d3d31; color: rgba(255,255,255,.7); font-size: 5.8pt; display: flex; justify-content: space-between; }
+    .shot-foot b { color: #73e2bb; font-weight: 700; }
+
+    .proof-list { display: flex; flex-direction: column; gap: 1.3mm; margin-top: 2mm; }
+    .proof-row {
+      display: grid;
+      grid-template-columns: 14mm 1fr;
+      gap: 1.8mm;
+      padding: 1.9mm;
+      border-radius: 1.7mm;
+      background: #f7faf8;
+      border: 1px solid #e0e8e3;
+    }
+    .proof-row .status { font-size: 5.5pt; font-weight: 800; letter-spacing: .04em; }
+    .proof-row .status.ok { color: #067a58; }
+    .proof-row .status.warn { color: #9a6200; }
+    .proof-row .status.bad { color: #a33b2f; }
+    .proof-row b { display: block; font-size: 6.8pt; line-height: 1.3; }
+    .proof-row span { display: block; margin-top: .55mm; font-size: 6.1pt; color: var(--muted); line-height: 1.35; }
+
+    .proof-metrics { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.7mm; margin-top: 2.6mm; }
+    .metric { padding: 2.4mm; border-radius: 1.6mm; background: #0c4638; color: #fff; }
+    .metric strong { display: block; color: #72e4bc; font-size: 12pt; line-height: 1; }
+    .metric span { display: block; margin-top: 1.2mm; color: rgba(255,255,255,.68); font-size: 6.2pt; }
+
+    .boundary-callout {
+      margin-top: 2mm;
+      padding: 2mm 2.4mm;
+      border-left: 1.2mm solid var(--teal);
+      background: #edf7f2;
+      font-size: 6.2pt;
+      line-height: 1.45;
+      color: #365049;
+    }
+
+    .three-role { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.2mm; margin-top: 2mm; }
+    .role { padding: 1.8mm 1.6mm; background: #f4f8f5; border: 1px solid #dce7e0; border-radius: 1.7mm; }
+    .role small { font-size: 5.3pt; color: var(--teal); font-weight: 800; letter-spacing: .1em; }
+    .role b { display: block; margin-top: .8mm; font-size: 6.9pt; }
+    .role span { display: block; margin-top: .7mm; font-size: 5.8pt; color: var(--muted); line-height: 1.35; }
+    .moat-quote { margin: 2mm 0 0; font-size: 6.7pt; line-height: 1.45; font-weight: 600; color: #2f473f; }
+
+    .evidence-card .section-head { margin-bottom: 1.4mm; }
+    .evidence-card .three-role { margin-top: 1.4mm; }
+    .evidence-card .role { padding: 1.5mm 1.4mm; }
+
+    .commercial-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.4mm; margin-top: 2mm; }
+    .mini { padding: 1.8mm; border-radius: 1.6mm; background: #f6f9f7; border: 1px solid #e0e8e3; }
+    .mini small { display: block; font-size: 5.4pt; color: var(--teal); font-weight: 800; letter-spacing: .08em; }
+    .mini b { display: block; margin-top: .8mm; font-size: 6.5pt; line-height: 1.3; }
+    .mini span { display: block; margin-top: .6mm; font-size: 5.6pt; color: var(--muted); line-height: 1.35; }
+
+    .honest {
+      margin-top: 2mm;
+      padding: 1.7mm 2.1mm;
+      border-radius: 1.5mm;
+      background: #fff8ed;
+      border: 1px solid #f0ddc3;
+      color: #7c5316;
+      font-size: 5.8pt;
+      line-height: 1.4;
+    }
+
+    .bottom-band {
+      display: grid;
+      grid-template-columns: 1.05fr 1.95fr;
+      gap: 3mm;
+      padding: 3mm 4mm;
+      border-radius: 2.5mm;
+      background: #102a24;
+      color: #fff;
+      align-items: center;
+    }
+    .bottom-band h3 { margin: 0; font-size: 11.5pt; line-height: 1.12; letter-spacing: -.02em; }
+    .bottom-band h3 span { color: var(--mint); }
+    .pillars { display: grid; grid-template-columns: repeat(4, 1fr); gap: 2mm; }
+    .pillar { border-left: 1px solid rgba(255,255,255,.16); padding-left: 2mm; }
+    .pillar b { display: block; font-size: 6.8pt; color: #75e4bd; }
+    .pillar span { display: block; margin-top: .7mm; font-size: 5.8pt; line-height: 1.35; color: rgba(255,255,255,.63); }
+
+    .footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: #65766f;
+      font-size: 6pt;
+      padding: 0 1mm;
+    }
+    .footer strong { color: #29453b; }
+    .footer a { color: var(--teal); text-decoration: none; }
+
+    @media screen and (max-width: 900px) {
+      .sheet { margin: 0; }
+    }
+
+    @media print {
+      html, body { background: #fff; }
+      .sheet { margin: 0; box-shadow: none; }
+      a { text-decoration: none; }
+    }
+  </style>
+</head>
+<body>
+  <main class="sheet">
+    <header class="hero">
+      <div>
+        <div class="eyebrow">QUOTESENTRY / 报价哨兵</div>
+        <h1>把询价审单，<br />变成<span>可追责的报价</span></h1>
+        <p class="hero-sub">面向中国高混紧固件外贸商的询价审单 Agent。邮件和 Excel 进入，逐行抽取并回指原文，能报的报准，不能报的明确停下。</p>
+        <div class="hero-tagline">模型负责读 · 规则负责算 · 人负责担责</div>
+        <div class="badges">
+          <span class="badge">真实 DeepSeek 全链路已验证</span>
+          <span class="badge">31 个自动化测试</span>
+          <span class="badge">仿真数据 Demo</span>
+        </div>
+      </div>
+      <div class="hero-proof">
+        <div class="hero-stat"><strong>3 → 1</strong><span>三行询价只放行 <em>1 条可报价行</em><br />1 条待澄清，1 条目录外</span></div>
+        <div class="hero-stat"><strong>25/25</strong><span>字段证据全部回指原文<br />无法验证的片段不进入报价</span></div>
+        <div class="hero-stat"><strong>0</strong><span>成本与毛利进入客户文件<br />客户视图和内部审批严格隔离</span></div>
+      </div>
+    </header>
+
+    <section class="main-grid">
+      <div class="column">
+        <article class="card">
+          <div class="section-head">
+            <div><div class="section-kicker">01 / PROBLEM</div><h2>真正的损失，不是写得慢</h2></div>
+            <span class="section-note">高混紧固件外贸</span>
+          </div>
+          <p class="problem-copy">报价员每天处理多规格、小批量、非标准写法的询价。<strong>一次缺参误报、相似 SKU 替代或毛利越线，带来的返工、空运和客户信任损失，远高于报价本身。</strong></p>
+          <div class="pain-row">
+            <div class="pain">缺参误报</div>
+            <div class="pain">相似 SKU 替代</div>
+            <div class="pain">审批无痕</div>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="section-head">
+            <div><div class="section-kicker">02 / PRODUCT LOOP</div><h2>从脏询价，到可审批报价</h2></div>
+            <span class="section-note">不是聊天框</span>
+          </div>
+          <div class="flow">
+            <div class="flow-step"><i>INPUT</i><b>邮件 / Excel</b><span>保留原始上下文</span></div>
+            <div class="flow-step"><i>EXTRACT</i><b>LLM 抽取 + 证据</b><span>模型不碰价格</span></div>
+            <div class="flow-step"><i>GATE</i><b>缺参 / 冲突 / 单位</b><span>异常先停下</span></div>
+            <div class="flow-step"><i>MATCH</i><b>私有目录硬匹配</b><span>拒绝相似替代</span></div>
+            <div class="flow-step"><i>PRICE</i><b>确定性计价</b><span>折扣 / 阶梯 / 毛利</span></div>
+            <div class="flow-step"><i>TRUST</i><b>人工审批 + 审计</b><span>导出客户 CSV / PDF</span></div>
+          </div>
+          <div class="boundary-row">
+            <span class="boundary">模型不碰钱</span>
+            <span class="boundary">SKU 必须回目录</span>
+            <span class="boundary">异常必须阻断</span>
+            <span class="boundary">人审批才导出</span>
+          </div>
+        </article>
+
+        <article class="card shot-card">
+          <div class="shot-head"><span>LIVE PRODUCT / 三行审单</span><strong>证据可回指 · 价格可复核</strong></div>
+          <img src="assets/quote-sentry-demo.png" alt="QuoteSentry 三行询价审单界面" />
+          <div class="shot-foot"><span>真实 DeepSeek 抽取</span><b>仿真目录与价格，仅用于演示</b></div>
+        </article>
+
+        <article class="card evidence-card">
+          <div class="section-head">
+            <div><div class="section-kicker">TRACE / EVIDENCE</div><h2>每一笔报价，都能复查</h2></div>
+            <span class="section-note">从原文到审批</span>
+          </div>
+          <div class="three-role">
+            <div class="role"><small>SOURCE</small><b>原文回指</b><span>字段必须能在询价原句中定位</span></div>
+            <div class="role"><small>RULE</small><b>规则版本</b><span>目录、门禁与计价均可复算</span></div>
+            <div class="role"><small>OWNER</small><b>审批责任</b><span>审批人、override 原因与哈希留痕</span></div>
+          </div>
+        </article>
+      </div>
+
+      <div class="column">
+        <article class="card">
+          <div class="section-head">
+            <div><div class="section-kicker">03 / PROOF</div><h2>三行询价，三种结果</h2></div>
+            <span class="section-note">seed-08</span>
+          </div>
+          <div class="proof-list">
+            <div class="proof-row">
+              <span class="status ok">PRICED</span>
+              <div><b>M12x75 8.8 ZN → HB-M12X75-88-ZN</b><span>目录硬匹配；确定性计价；客户金额 USD 465.00</span></div>
+            </div>
+            <div class="proof-row">
+              <span class="status warn">CLARIFY</span>
+              <div><b>缺表面处理 → 待澄清</b><span>不猜规格，不生成正式价格；生成英文澄清草稿</span></div>
+            </div>
+            <div class="proof-row">
+              <span class="status bad">NO MATCH</span>
+              <div><b>M14x60 目录外 → 明确停止</b><span>不用相似规格替代；异常不拖死整封询价</span></div>
+            </div>
+          </div>
+          <div class="boundary-callout">报价审批展示客户视图与内部成本隔离；CSV / PDF 不含成本、毛利、折扣和内部异常。当前 <b>SEND_MODE=disabled</b>，比赛版只导出，不假装已接入真实邮箱。</div>
+        </article>
+
+        <article class="card">
+          <div class="section-head">
+            <div><div class="section-kicker">04 / NOT A WRAPPER</div><h2>把模型拿掉，还剩下什么？</h2></div>
+          </div>
+          <div class="three-role">
+            <div class="role"><small>MODEL</small><b>可替换</b><span>只做字段抽取与原文回指</span></div>
+            <div class="role"><small>RULES</small><b>可积累</b><span>目录、门禁、计价、审批口径</span></div>
+            <div class="role"><small>HUMAN</small><b>可追责</b><span>审批、override、责任与审计</span></div>
+          </div>
+          <p class="moat-quote">公共紧固件知识不是壁垒，大模型学得会。真正留下的是客户私有目录、协议价、例外记录、审批链和长期纠错数据。</p>
+        </article>
+
+        <article class="card">
+          <div class="section-head">
+            <div><div class="section-kicker">05 / MARKET &amp; MODEL</div><h2>先做一个窄而硬的岗位</h2></div>
+          </div>
+          <div class="commercial-grid">
+            <div class="mini"><small>CUSTOMER</small><b>高混紧固件外贸商</b><span>多规格、小批量、邮件/Excel 入口；有私有目录与审批规则</span></div>
+            <div class="mini"><small>REVENUE / HYPOTHESIS</small><b>实施费 + 订阅</b><span>按席位或询价量；私有化与 ERP/CRM 连接器增值</span></div>
+            <div class="mini"><small>GO-TO-MARKET</small><b>设计伙伴先行</b><span>10 家访谈，3 家设计伙伴，50–100 份脱敏询价</span></div>
+            <div class="mini"><small>PROOF TO BUILD</small><b>可复测指标</b><span>抽取正确率、目录 Top-1、缺参阻断、报价耗时与接管率</span></div>
+          </div>
+          <div class="honest">当前是仿真 Demo，尚无真实客户 ROI。比赛证明闭环与边界；付费意愿、目录初始化成本和报价员采用率需要赛后验证，不用虚构数字替代实测。</div>
+        </article>
+      </div>
+    </section>
+
+    <section class="bottom-band">
+      <h3>为什么值得看<br /><span>一个真实、狭窄的责任边界</span></h3>
+      <div class="pillars">
+        <div class="pillar"><b>窄</b><span>一个行业，一段审单流程</span></div>
+        <div class="pillar"><b>硬</b><span>价格不由模型决定</span></div>
+        <div class="pillar"><b>可落地</b><span>不先替换 ERP，邮件/Excel 可进入</span></div>
+        <div class="pillar"><b>有延展</b><span>私有目录、纠错数据、连接器</span></div>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <span><strong>QuoteSentry / 报价哨兵</strong> · 当前：可运行 Demo · 下一步：设计伙伴与真实询价验证</span>
+      <span><a href="https://github.com/wayknow/quotesentry">github.com/wayknow/quotesentry</a> · support@wayknow.tech</span>
+    </footer>
+  </main>
+</body>
+</html>

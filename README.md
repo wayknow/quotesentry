@@ -82,6 +82,8 @@ tests/golden/         计价、门禁、匹配、流程、导出隔离测试
 | [deploy.md](deploy.md) | 本地运行、环境变量、wayknow 子目录部署 |
 | [docs/DEMO.md](docs/DEMO.md) | 3–5 分钟演示脚本、演示前检查和故障兜底 |
 | [docs/PITCH.md](docs/PITCH.md) | 一页纸结构、路演话术和常见追问 |
+| [demo/QuoteSentry-one-pager.pdf](demo/QuoteSentry-one-pager.pdf) | A4 单页路演稿（PDF，严格 1 页） |
+| [demo/QuoteSentry-one-pager.png](demo/QuoteSentry-one-pager.png) | 一页纸高清预览图 |
 | [demo/QuoteSentry-demo-zh.mp4](demo/QuoteSentry-demo-zh.mp4) | 3 分 34 秒中文旁白演示视频 |
 | [AGENTS.md](AGENTS.md) | 面向编码 Agent 的仓库约束与自检 |
 
