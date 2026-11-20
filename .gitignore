@@ -7,3 +7,7 @@ data/exports/
 *.log
 .DS_Store
 .claude/
+
+# Internal planning documents (keep local only)
+Agent大赛项目选型调研报告.md
+Codex改造任务书.md
