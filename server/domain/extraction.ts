@@ -64,7 +64,7 @@ export async function extractLines(rawText: string, sourceType: SourceType): Pro
   return {
     lines: extractTextLines(rawText),
     engineMode: 'rules',
-    engineNote: '未配置 LLM_API_KEY：使用规则模式。界面明确标注，不冒充 AI。',
+    engineNote: '未配置 DEEPSEEK_API_KEY：使用规则模式。界面明确标注，不冒充 AI。',
     model: null,
   };
 }

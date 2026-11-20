@@ -9,7 +9,7 @@
 - **核心闭环**：读取邮件文本/Excel → 逐行抽取规格与证据 → 缺参/冲突/目录外阻断 → 目录硬过滤 → 确定性计价 → 人工审批 → CSV/PDF 导出 → 审计追溯。
 - **5 天版范围**：一个产品族、33 个仿真 SKU、9 份询价、两种输入、两个核心页面、正常与异常三条演示链路。
 - **技术栈（5 天版）**：React + Vite + TypeScript + Express + Zod；本地 JSON 持久化；模型走 DeepSeek OpenAI 兼容接口。
-- **当前状态**：MVP 主链路已实现并通过 30 个自动化测试；真实 DeepSeek Key 与 wayknow 部署待配置。
+- **当前状态**：MVP 主链路已实现并通过 31 个自动化测试；DeepSeek 服务端直连 smoke 已通过，wayknow 部署待配置。
 
 ## 硬性约束
 
@@ -114,7 +114,7 @@ curl -s http://127.0.0.1:3001/api/health
 另外检查：
 
 ```bash
-rg -n 'sk-|LLM_API_KEY|OPENAI_API_KEY' --glob '!*.md' --glob '!*.example'
+rg -n 'sk-|DEEPSEEK_API_KEY|LLM_API_KEY|OPENAI_API_KEY' --glob '!*.md' --glob '!*.example'
 rg -n 'TODO|FIXME|XXX' --glob '!decisions.md'
 rg -n 'localhost|127.0.0.1' client/src
 ```

@@ -121,3 +121,9 @@
 **Decision**：本地演示不实现账号、权限、CSRF 和多租户；API 只绑定 `127.0.0.1`。  
 **Why**：5 天版要把时间放在审单闭环，而不是身份系统。  
 **Impact**：不得直接暴露公网；部署到 wayknow 前必须加反向代理鉴权或访问限制。
+
+## 21. DeepSeek 接入沿用 app_survey 的服务端直连方式
+
+**Decision**：使用 `DEEPSEEK_API_KEY`、`DEEPSEEK_BASE_URL`、`DEEPSEEK_MODEL`，由 Express 服务端直接请求 `https://api.deepseek.com/chat/completions`；与现有 `app_survey` 的请求方式保持一致。
+**Why**：已有服务端已验证这条路可用，统一变量名和调用方式能减少部署时的配置分叉；Key 不进入浏览器也能避免泄露。
+**Impact**：保留旧 `LLM_*` 变量兼容；新增 `npm run test:deepseek` 用于配置真实 Key 后验证端点和鉴权。

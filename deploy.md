@@ -9,14 +9,14 @@
 - 本地生产：`npm run build && npm start`，同一 `3001` 端口提供静态页面和 API。
 - 线上：预留 `work/wayknow` 站点的 `/quotesentry/` 子目录与 `/quotesentry/api/` 同源路径。
 - 数据：`data/db.json`；演示可通过 API 重置。
-- 模型：DeepSeek OpenAI 兼容接口，密钥只在服务端读取。
+- 模型：DeepSeek OpenAI 兼容接口，服务端直连 `https://api.deepseek.com/chat/completions`；密钥只在服务端读取。
 
 ## 2. 本地开发
 
 ```bash
 npm install
 cp .env.example .env
-# 编辑 .env，填入 LLM_API_KEY；也可以先留空使用规则模式
+# 编辑 .env，填入 DEEPSEEK_API_KEY；也可以先留空使用规则模式
 npm run dev
 ```
 
@@ -46,17 +46,28 @@ SEND_MODE=disabled
 DB_PATH=./data/db.json
 
 LLM_PROVIDER=deepseek
-LLM_BASE_URL=https://api.deepseek.com
-LLM_API_KEY=
-LLM_MODEL=deepseek-chat
-LLM_TIMEOUT_MS=45000
-LLM_MAX_RETRIES=1
+DEEPSEEK_API_KEY=
+DEEPSEEK_BASE_URL=https://api.deepseek.com
+DEEPSEEK_MODEL=deepseek-chat
+DEEPSEEK_TIMEOUT_MS=45000
+DEEPSEEK_MAX_RETRIES=1
 ```
+
+接入方式与现有 `app_survey` 服务端一致：Express 用 `fetch` 直连 DeepSeek，请求头为 `Authorization: Bearer ${DEEPSEEK_API_KEY}`，请求 `POST /chat/completions`。浏览器永远不会收到 Key，也不直接请求 DeepSeek。
+
+配置后做一次真实连通性检查：
+
+```bash
+npm run test:deepseek
+```
+
+命令只打印 endpoint、模型、耗时和模型返回内容，不打印 Key。
 
 约束：
 
 - `.env` 已在 `.gitignore` 中，不能提交真实 Key。
-- `LLM_API_KEY` 不进入前端包、API 响应、日志或导出文件。
+- `DEEPSEEK_API_KEY` 不进入前端包、API 响应、日志或导出文件。
+- 旧变量 `LLM_API_KEY`、`LLM_BASE_URL`、`LLM_MODEL` 仍兼容，但新配置统一使用 `DEEPSEEK_*`。
 - `SEND_MODE=disabled` 时 `/api/rfqs/:id/send` 始终返回 HTTP 403。
 - `APP_MODE=demo` 时前端固定显示“仿真演示”。
 
@@ -157,7 +168,7 @@ location /quotesentry/api/ {
 - [x] 客户导出不含成本/毛利/内部异常。
 - [x] `SEND_MODE=disabled` 时发送接口拒绝。
 - [x] 仿真数据横幅可见。
-- [ ] 真实 DeepSeek Key smoke test。
+- [x] 真实 DeepSeek Key smoke test：`npm run test:deepseek`。
 - [ ] 子路径 `VITE_BASE_PATH=/quotesentry/` 在 wayknow 预发环境验证。
 - [ ] 刷新深层页面不 404。
 - [ ] `/quotesentry/api/health` 可访问。

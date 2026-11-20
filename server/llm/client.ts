@@ -25,7 +25,7 @@ class LlmRequestError extends Error {
 
 export async function callDeepSeekJson(prompt: string): Promise<unknown> {
   if (!hasLlmKey()) {
-    throw new Error('LLM_API_KEY 未配置，无法调用 DeepSeek。');
+    throw new Error('DEEPSEEK_API_KEY 未配置，无法调用 DeepSeek。');
   }
 
   let lastError: Error | null = null;

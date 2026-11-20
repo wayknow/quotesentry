@@ -12,8 +12,8 @@
 | 技术底座 | ✅ React + Vite + TypeScript + Express + Zod + JSON |
 | 代码实现 | ✅ 主链路可运行 |
 | Demo 数据 | ✅ 33 SKU / 9 份仿真询价 / 3 客户 |
-| 自动化测试 | ✅ 30 个测试通过 |
-| DeepSeek 实调用 | ⏳ 等待用户配置 API Key |
+| 自动化测试 | ✅ 31 个测试通过 |
+| DeepSeek 实调用 | ✅ 服务端直连 smoke 已通过 |
 | wayknow 部署 | ⏳ 未执行；按 deploy.md 手工接入 |
 | 比赛录屏/路演材料 | ⏳ 待制作 |
 
@@ -21,7 +21,9 @@
 
 - 建立 React/Vite 桌面工作台与 Express API。
 - 实现邮件文本、CSV、XLSX 三种上传/输入路径。
-- 实现 DeepSeek OpenAI 兼容网关：JSON 校验、超时、有限重试、代码块兼容、失败降级。
+- 实现 DeepSeek OpenAI 兼容网关：服务端直连、JSON 校验、超时、有限重试、代码块兼容、失败降级。
+- 对齐 `app_survey` 的服务端接入方式：`DEEPSEEK_API_KEY` + `Bearer` + `https://api.deepseek.com/chat/completions`，并提供真实 Key smoke 命令。
+- 用真实 Key 完成服务端直连 smoke：HTTP 请求成功并返回合法 JSON，确认端点、鉴权和模型名可用。
 - 实现逐行抽取、原文回指、缺参/冲突/单位门禁、目录硬匹配。
 - 实现整数分为单位的确定性计价：数量阶梯、客户折扣、汇率、固定费用和毛利底线。
 - 实现三行询价（可报价 / 待澄清 / 目录外）并行处理，异常行不拖死整封询价。
@@ -35,7 +37,7 @@
 
 ```text
 npm run check    ✅
-npm test         ✅ 4 files / 30 tests
+npm test         ✅ 5 files / 31 tests
 npm run seed     ✅ 9/9 samples recognized
 npm run build    ✅
 ```
@@ -52,7 +54,7 @@ npm run build    ✅
 
 ## 🚧 In Progress
 
-- 用真实 DeepSeek Key 做一次现场抽取 smoke test，确认模型返回格式和网络稳定性。
+- 用真实询价做一次 LLM 抽取回归，确认字段、证据回指和降级提示符合预期。
 - 录制 3-5 分钟演示视频。
 - 制作比赛一页纸：问题、客户、演示、边界、商业化。
 
@@ -60,7 +62,7 @@ npm run build    ✅
 
 | 任务 | 完成定义 |
 |---|---|
-| DeepSeek smoke test | 配置 Key 后，同一份邮件切换到 LLM 模式并保留原文证据 |
+| 真实询价 LLM 回归 | 同一份邮件切换到 LLM 模式，保留原文证据并跑完审批链路 |
 | 演示录屏 | 三行询价 → override / 审批 → CSV/PDF → 审计，全链路无手工修数据库 |
 | wayknow 子路径 | 先本地 `VITE_BASE_PATH=/quotesentry/` 验证，再改 Nginx |
 | 路演材料 | 不宣称真实客户 ROI；明确仿真数据和规则口径 |
@@ -69,7 +71,7 @@ npm run build    ✅
 
 | 风险 | 影响 | 应对 |
 |---|---|---|
-| 尚未实调 DeepSeek | 现场可能遇到网络/限流 | 提前配置 Key smoke test；规则模式与录屏兜底 |
+| 现场网络/限流 | 演示时模型调用可能超时 | 已通过 API smoke；保留规则模式与录屏兜底 |
 | 模型输出漂移 | 字段缺失或证据不对齐 | Zod 校验 + 原文子串验证 + 失败降级 |
 | JSON 文件持久化 | 并发/生产可靠性不足 | 仅用于本地演示；生产换数据库 |
 | API 无鉴权 | 不可公网裸露 | 部署在受控内网/Nginx 鉴权后 |
@@ -78,6 +80,6 @@ npm run build    ✅
 
 ## 下一步
 
-1. 用户填入 `LLM_API_KEY`，跑一次真实 DeepSeek 抽取。
+1. 用 `seed-08` 跑一次真实 LLM 抽取，核对字段、证据回指和降级提示。
 2. 用 `seed-08` 录制主演示，用 `seed-06` 录 override 分支。
 3. 确认是否接入 `work/wayknow` 的 `/quotesentry/` 子目录；未确认前不修改站点。

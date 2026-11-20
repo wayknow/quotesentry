@@ -12,6 +12,7 @@
     "start": "tsx server/index.ts",
     "check": "tsc --noEmit",
     "test": "vitest run",
+    "test:deepseek": "tsx scripts/deepseek-smoke.ts",
     "seed": "tsx scripts/seed-check.ts"
   },
   "dependencies": {

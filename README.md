@@ -15,7 +15,7 @@ npm run dev
 - API：`http://127.0.0.1:3001`
 - 生产构建：`npm run build && npm start`，访问 `http://127.0.0.1:3001`
 
-DeepSeek 默认走 OpenAI 兼容接口。复制 `.env.example` 为 `.env`，填入 `LLM_API_KEY` 后重启服务端即可；未配置 Key 时界面明确显示“规则模式”，不会冒充 AI。
+DeepSeek 默认走 OpenAI 兼容接口。复制 `.env.example` 为 `.env`，填入 `DEEPSEEK_API_KEY` 后重启服务端即可；Key 只由 Express 服务端读取，不进入浏览器。未配置 Key 时界面明确显示“规则模式”，不会冒充 AI。配置后可运行 `npm run test:deepseek` 做一次真实连通性 smoke test。
 
 ## 产品一句话
 
@@ -53,7 +53,8 @@ QuoteSentry 读取邮件文本和 Excel 询价，逐行抽取规格并回指原�
 ```bash
 npm run dev       # 同时启动 Vite 和 Express
 npm run check     # TypeScript 类型检查
-npm test          # 30 个金标/领域测试
+npm test          # 31 个金标/领域测试
+npm run test:deepseek  # 用真实 Key 直连 DeepSeek 做 smoke test
 npm run seed      # 校验 9 份仿真询价均可识别
 npm run build     # 生产构建
 npm start         # 运行生产构建 + API
@@ -83,7 +84,7 @@ tests/golden/         计价、门禁、匹配、流程、导出隔离测试
 
 ## 当前限制
 
-- 尚未用真实 DeepSeek Key 做现场 smoke test；等待用户配置 API Key。
+- DeepSeek 服务端连通性和鉴权已实测通过；仍需用真实询价做一次 LLM 抽取回归，并准备规则模式录屏兜底。
 - 不做 PDF 原文件解析、OCR、真实邮箱/ERP、多租户、登录权限。
 - 毛利为税前、未计出口退税的演示口径。
 - JSON 持久化与无鉴权 API 只适合本地演示，不适合直接暴露公网。

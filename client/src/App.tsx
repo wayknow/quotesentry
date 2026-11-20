@@ -420,7 +420,7 @@ function Sidebar(props: {
           <div className="engine-card-note">
             {props.data.health.engine === 'llm'
               ? `${props.data.health.model} · 仅做字段抽取`
-              : '未配置 LLM_API_KEY；界面不冒充 AI'}
+              : '未配置 DEEPSEEK_API_KEY；界面不冒充 AI'}
           </div>
         </div>
         <button className="reset-link" onClick={props.onReset} disabled={props.resetting}>
