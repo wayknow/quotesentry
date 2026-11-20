@@ -24,7 +24,7 @@
 - 实现 DeepSeek OpenAI 兼容网关：服务端直连、JSON 校验、超时、有限重试、代码块兼容、失败降级。
 - 对齐 `app_survey` 的服务端接入方式：`DEEPSEEK_API_KEY` + `Bearer` + `https://api.deepseek.com/chat/completions`，并提供真实 Key smoke 命令。
 - 用真实 Key 完成服务端直连 smoke：HTTP 请求成功并返回合法 JSON，确认端点、鉴权和模型名可用。
-- 用 `seed-08` 完成真实 DeepSeek 全链路：三行识别为 `PRICED / NEEDS_CLARIFICATION / NO_MATCH`，25 条证据全部回指成功；审批、CSV/PDF 导出和发送阻断均通过。
+- 用 `seed-08` 完成真实 DeepSeek 全链路：三行识别为 `PRICED / NEEDS_CLARIFICATION / NO_MATCH`，26 条证据全部回指成功；审批、CSV/PDF 导出和发送阻断均通过。
 - 实现逐行抽取、原文回指、缺参/冲突/单位门禁、目录硬匹配。
 - 实现整数分为单位的确定性计价：数量阶梯、客户折扣、汇率、固定费用和毛利底线。
 - 实现三行询价（可报价 / 待澄清 / 目录外）并行处理，异常行不拖死整封询价。
@@ -56,8 +56,9 @@ npm run build    ✅
 - PDF 返回合法 `%PDF` 文件。
 - `POST /send` 在 `SEND_MODE=disabled` 时返回 HTTP 403。
 - XLSX 上传后可完成表头规则抽取和计价。
-- `seed-08` 真实 LLM 抽取：第 1 行 `PRICED`、第 2 行缺 `surfaceTreatment`、第 3 行 `NO_MATCH`，证据 25/25 已验证。
+- `seed-08` 真实 LLM 抽取：第 1 行 `PRICED`、第 2 行缺 `surfaceTreatment`、第 3 行 `NO_MATCH`，证据 26/26 已验证；连续 3 次状态与金额稳定。
 - 真实 LLM 结果审批成功，生成 USD 465.00 客户报价；CSV/PDF 导出成功，客户 CSV 不含成本/毛利。
+- 整单毛利率 21.09%，ROW 01 行毛利率 24.67%；演示口径已区分整单与行级毛利。
 - `POST /send` 在 `SEND_MODE=disabled` 时返回 HTTP 403。
 
 ## 🚧 In Progress
