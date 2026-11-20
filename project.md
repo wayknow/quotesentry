@@ -244,4 +244,5 @@ foreignAmount   = cnyAmount / cnyPerUnitCurrency
 - [deploy.md](deploy.md)：本地运行与 wayknow 子目录部署。
 - [docs/DEMO.md](docs/DEMO.md)：固定演示脚本、预期结果和故障兜底。
 - [docs/PITCH.md](docs/PITCH.md)：一页纸结构与路演问答。
+- [demo/QuoteSentry-demo-zh.mp4](demo/QuoteSentry-demo-zh.mp4)：3 分 34 秒中文旁白演示视频。
 - [AGENTS.md](AGENTS.md)：Agent 编码约束与自检。

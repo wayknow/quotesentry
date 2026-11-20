@@ -4,6 +4,8 @@
 >
 > 主线固定使用 `seed-08`；只有评委追问毛利风控时，再加演 `seed-06`。
 
+**已录制版本**：[demo/QuoteSentry-demo-zh.mp4](../demo/QuoteSentry-demo-zh.mp4)（3 分 34 秒，中文旁白）｜字幕：[demo/QuoteSentry-demo-zh.srt](../demo/QuoteSentry-demo-zh.srt)
+
 ## 1. 固定预期结果
 
 当前仿真目录和 `seed-08` 应得到：

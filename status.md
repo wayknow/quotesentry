@@ -15,7 +15,7 @@
 | 自动化测试 | ✅ 31 个测试通过 |
 | DeepSeek 实调用 | ✅ 服务端直连 smoke 已通过 |
 | wayknow 部署 | ⏳ 未执行；按 deploy.md 手工接入 |
-| 比赛录屏/路演材料 | ⏳ 待制作 |
+| 比赛录屏/路演材料 | 🟡 演示视频已完成；一页纸待设计 |
 
 ## ✅ Done
 
@@ -34,6 +34,7 @@
 - 实现演示数据重置、健康检查、bootstrap、询价 CRUD 与导出 API。
 - 完成 1440px 桌面浏览器渲染检查。
 - 写好 `docs/DEMO.md` 演示 Runbook、演示前检查、故障兜底和 `docs/PITCH.md` 路演大纲。
+- 完成 3 分 34 秒中文旁白演示视频：`demo/QuoteSentry-demo-zh.mp4`，并附 SRT 字幕。
 
 ## 验证结果
 
@@ -60,14 +61,12 @@ npm run build    ✅
 
 ## 🚧 In Progress
 
-- 录制 3-5 分钟演示视频。
 - 将 `docs/PITCH.md` 设计成最终一页纸。
 
 ## ⏳ Pending
 
 | 任务 | 完成定义 |
 |---|---|
-| 演示录屏 | 三行询价 → override / 审批 → CSV/PDF → 审计，全链路无手工修数据库 |
 | wayknow 子路径 | 先本地 `VITE_BASE_PATH=/quotesentry/` 验证，再改 Nginx |
 | 路演材料 | 将 `docs/PITCH.md` 定稿；不宣称真实客户 ROI，明确仿真数据和规则口径 |
 
@@ -84,6 +83,6 @@ npm run build    ✅
 
 ## 下一步
 
-1. 用 `seed-08` 录制主演示，用 `seed-06` 录 override 分支。
-2. 制作比赛一页纸，明确仿真数据、规则口径和 agent 边界。
+1. 将 `docs/PITCH.md` 设计成最终一页纸，明确仿真数据、规则口径和 agent 边界。
+2. 用录制视频做一次正式彩排，确认 3–5 分钟讲解节奏。
 3. 确认是否接入 `work/wayknow` 的 `/quotesentry/` 子目录；未确认前不修改站点。
