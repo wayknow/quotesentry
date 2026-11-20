@@ -33,6 +33,7 @@
 - 实现 `SEND_MODE=disabled` 服务端拒绝外发。
 - 实现演示数据重置、健康检查、bootstrap、询价 CRUD 与导出 API。
 - 完成 1440px 桌面浏览器渲染检查。
+- 写好 `docs/DEMO.md` 演示 Runbook、演示前检查、故障兜底和 `docs/PITCH.md` 路演大纲。
 
 ## 验证结果
 
@@ -60,7 +61,7 @@ npm run build    ✅
 ## 🚧 In Progress
 
 - 录制 3-5 分钟演示视频。
-- 制作比赛一页纸：问题、客户、演示、边界、商业化。
+- 将 `docs/PITCH.md` 设计成最终一页纸。
 
 ## ⏳ Pending
 
@@ -68,7 +69,7 @@ npm run build    ✅
 |---|---|
 | 演示录屏 | 三行询价 → override / 审批 → CSV/PDF → 审计，全链路无手工修数据库 |
 | wayknow 子路径 | 先本地 `VITE_BASE_PATH=/quotesentry/` 验证，再改 Nginx |
-| 路演材料 | 不宣称真实客户 ROI；明确仿真数据和规则口径 |
+| 路演材料 | 将 `docs/PITCH.md` 定稿；不宣称真实客户 ROI，明确仿真数据和规则口径 |
 
 ## ⚠️ Risks
 

@@ -242,4 +242,6 @@ foreignAmount   = cnyAmount / cnyPerUnitCurrency
 - [status.md](status.md)：当前进度、风险和下一步。
 - [decisions.md](decisions.md)：关键技术/产品决策及原因。
 - [deploy.md](deploy.md)：本地运行与 wayknow 子目录部署。
+- [docs/DEMO.md](docs/DEMO.md)：固定演示脚本、预期结果和故障兜底。
+- [docs/PITCH.md](docs/PITCH.md)：一页纸结构与路演问答。
 - [AGENTS.md](AGENTS.md)：Agent 编码约束与自检。
