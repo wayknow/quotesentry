@@ -169,6 +169,7 @@ location /quotesentry/api/ {
 - [x] `SEND_MODE=disabled` 时发送接口拒绝。
 - [x] 仿真数据横幅可见。
 - [x] 真实 DeepSeek Key smoke test：`npm run test:deepseek`。
+- [x] `seed-08` 真实 LLM 抽取、审批、CSV/PDF 导出与发送阻断通过。
 - [ ] 子路径 `VITE_BASE_PATH=/quotesentry/` 在 wayknow 预发环境验证。
 - [ ] 刷新深层页面不 404。
 - [ ] `/quotesentry/api/health` 可访问。
