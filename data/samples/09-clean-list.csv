@@ -1,0 +1,4 @@
+product_type,standard,diameter_mm,length_mm,material,strength_grade,surface_treatment,quantity,unit
+hex_bolt,DIN 933,12,75,carbon_steel,8.8,zinc,200,pcs
+hex_bolt,DIN 933,10,50,carbon_steel,8.8,zinc,1000,pcs
+hex_bolt,DIN 933,8,40,carbon_steel,10.9,zinc,500,pcs

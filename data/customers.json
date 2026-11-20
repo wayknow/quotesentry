@@ -1,0 +1,29 @@
+[
+  {
+    "id": "CUST-001",
+    "name": "Ningbo Fastener Import Co.",
+    "country": "Germany",
+    "discount": 0.92,
+    "currency": "USD",
+    "incoterm": "FOB Ningbo",
+    "notes": "Standard export customer; clean inquiries; 92% of list price."
+  },
+  {
+    "id": "CUST-002",
+    "name": "Hamburg Industrial Supply GmbH",
+    "country": "Germany",
+    "discount": 0.9,
+    "currency": "USD",
+    "incoterm": "FOB Ningbo",
+    "notes": "Volume customer; strict packaging and certification requirements."
+  },
+  {
+    "id": "CUST-003",
+    "name": "Dubai Trading Partners LLC",
+    "country": "UAE",
+    "discount": 0.8,
+    "currency": "USD",
+    "incoterm": "FOB Ningbo",
+    "notes": "Price-sensitive customer; margin may fall below floor."
+  }
+]

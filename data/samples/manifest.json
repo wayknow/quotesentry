@@ -1,0 +1,11 @@
+[
+  { "file": "01-clean-email.txt", "title": "完整英文询价 · M12x75 8.8 ZN", "customerId": "CUST-001", "sourceType": "text", "note": "正常链路：应匹配、计价、可审批" },
+  { "file": "02-missing-finish.txt", "title": "缺表面处理 · M12x75 8.8", "customerId": "CUST-001", "sourceType": "text", "note": "缺参链路：应转澄清，不生成正式价格" },
+  { "file": "03-out-of-catalog.txt", "title": "目录外规格 · M14x60", "customerId": "CUST-001", "sourceType": "text", "note": "拒识链路：目录无 M14，必须显示无匹配" },
+  { "file": "04-unit-conflict.txt", "title": "单位冲突 · 100 boxes", "customerId": "CUST-001", "sourceType": "text", "note": "单位不支持，应转澄清" },
+  { "file": "05-same-as-last-time.txt", "title": "上下文缺失 · same as last time", "customerId": "CUST-001", "sourceType": "text", "note": "不能猜历史报价，必须澄清" },
+  { "file": "06-margin-breach.txt", "title": "毛利越界 · CUST-003", "customerId": "CUST-003", "sourceType": "text", "note": "低于毛利底线，审批需 override" },
+  { "file": "07-partial-thread.txt", "title": "半螺纹标准等价 · DIN 931", "customerId": "CUST-001", "sourceType": "text", "note": "DIN 931 / ISO 4014 / GB/T 5782 等价组" },
+  { "file": "08-multi-line.txt", "title": "演示主场景 · 三行询价", "customerId": "CUST-001", "sourceType": "text", "note": "一行可报、一行缺参、一行目录外" },
+  { "file": "09-clean-list.csv", "title": "Excel/CSV 批量询价", "customerId": "CUST-002", "sourceType": "csv", "note": "结构化表格输入，规则抽取" }
+]

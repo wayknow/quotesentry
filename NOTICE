@@ -1,0 +1,24 @@
+QuoteSentry (报价哨兵)
+
+This project is a domain-specific application inspired by
+the following MIT-licensed open-source projects:
+
+1. B2B-RFP-Agent
+   https://github.com/AnshMNSoni/B2B-RFP-Agent
+   Copyright (c) 2025 ansh.mn.soni
+   License: MIT
+
+2. rfq-quote-agent
+   https://github.com/gourav-shokeen/rfq-quote-agent
+   Copyright (c) 2026 Gourav Shokeen
+   License: MIT
+
+QuoteSentry is not affiliated with or endorsed by the authors of the upstream
+projects. Any copied source code or documentation must retain the original
+license and copyright notice. The upstream projects are wire-cable and
+n8n-based demos respectively; QuoteSentry replaces the domain model, catalog,
+matching, pricing, approval, audit, and export logic for fastener RFQ review.
+
+At the time of writing, no upstream source code has been copied into this
+repository. QuoteSentry's implementation is a greenfield thin slice. This
+NOTICE must be updated if upstream code is ever introduced.

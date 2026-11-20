@@ -1,0 +1,10 @@
+{
+  "id": "CN-FASTENER-DEMO",
+  "version": "2026.11-demo.1",
+  "currency": "USD",
+  "cnyPerUnitCurrency": 7.2,
+  "minimumMarginPct": 18,
+  "fixedOrderFeeCny": 120,
+  "validDays": 14,
+  "rounding": "2dp"
+}
