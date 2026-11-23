@@ -13,7 +13,7 @@
 | 代码实现 | ✅ 主链路可运行 |
 | Demo 数据 | ✅ 33 SKU / 9 份仿真询价 / 3 客户 |
 | 自动化测试 | ✅ 41 个测试通过 |
-| DeepSeek 实调用 | ✅ 服务端直连 smoke 已通过 |
+| DeepSeek 实调用 | ✅ 线上 Worker Key 已配置，实时抽取已验收 |
 | wayknow 前端 | ✅ 已构建到 `work/wayknow/quotesentry/` |
 | 线上部署 | ✅ `wayknow.tech/quotesentry/` + Worker API + D1 已上线 |
 | 比赛录屏/路演材料 | ✅ 演示视频、SRT、A4 一页纸均已完成 |
@@ -25,6 +25,8 @@
 - 实现 DeepSeek OpenAI 兼容网关：服务端直连、JSON 校验、超时、有限重试、代码块兼容、失败降级。
 - 对齐 `app_survey` 的服务端接入方式：`DEEPSEEK_API_KEY` + `Bearer` + `https://api.deepseek.com/chat/completions`，并提供真实 Key smoke 命令。
 - 用真实 Key 完成服务端直连 smoke：HTTP 请求成功并返回合法 JSON，确认端点、鉴权和模型名可用。
+- 线上 Worker 配置 `DEEPSEEK_API_KEY`，`/quotesentry/api/health` 已返回 `engine: "llm"`、`llmConfigured: true`。
+- 线上 `seed-08` 真实 LLM 验收通过：三行状态正确、USD 465.00、26/26 证据；审批、CSV/PDF 和发送阻断均通过，验收后已重置为 9 份样例。
 - 用 `seed-08` 完成真实 DeepSeek 全链路：三行识别为 `PRICED / NEEDS_CLARIFICATION / NO_MATCH`，26 条证据全部回指成功；审批、CSV/PDF 导出和发送阻断均通过。
 - 实现逐行抽取、原文回指、缺参/冲突/单位门禁、目录硬匹配。
 - 实现整数分为单位的确定性计价：数量阶梯、客户折扣、汇率、固定费用和毛利底线。
@@ -88,7 +90,6 @@ npm run db:migrate:local ✅
 
 | 任务 | 完成定义 |
 |---|---|
-| DeepSeek 线上 Key | 配置 `DEEPSEEK_API_KEY` Worker secret，把当前规则模式切换为实时抽取 |
 | D1 备份与配额 | 比赛后补自动备份、配额告警和恢复演练 |
 | 静态资源缓存/带宽 | 线上首次资源加载偶发较慢，比赛前复查 Cloudflare 缓存策略 |
 | 现场彩排 | 用一页纸 + 录屏完成一次 3–5 分钟讲解，确认节奏、追问和故障兜底 |
@@ -99,7 +100,7 @@ npm run db:migrate:local ✅
 |---|---|---|
 | 现场网络/限流 | 演示时模型调用可能超时 | 已通过 API smoke；保留规则模式与录屏兜底 |
 | 模型输出漂移 | 字段缺失或证据不对齐 | Zod 校验 + 原文子串验证 + 失败降级 |
-| DeepSeek Key 未配置 | 线上显示规则模式，不是实时模型抽取 | 用户配置 Worker secret 后重新验收 `seed-08` |
+| DeepSeek 额度/限流 | 现场调用可能超时或返回 429 | 保留规则模式与录屏兜底；演示前预热并复测 `seed-08` |
 | API 鉴权未启用 | 公网可直接调用演示 API | 预发同时配置 Worker Basic Auth；正式版做登录与角色权限 |
 | D1 运维 | 备份、配额和误删未验证 | 比赛版只开放预发；正式上线前补备份和配额告警 |
 | xlsx 依赖安全告警 | 恶意表格风险 | 只接收可信文件；生产加隔离解析/病毒扫描 |
@@ -107,6 +108,5 @@ npm run db:migrate:local ✅
 
 ## 下一步
 
-1. 配置 `DEEPSEEK_API_KEY` Worker secret，线上复测 `seed-08` 的真实模型抽取。
-2. 用线上地址完成一次彩排，检查静态资源首次加载和 API 延迟。
-3. 比赛前执行 `POST /api/reset-demo`，确保从 9 份干净样例开始。
+1. 用线上地址完成一次彩排，检查静态资源首次加载和 API 延迟。
+2. 比赛前执行 `POST /api/reset-demo`，确保从 9 份干净样例开始。

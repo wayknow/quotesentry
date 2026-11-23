@@ -1,6 +1,6 @@
 # Deployment Guide
 
-> 当前状态：前端与 Worker + D1 已上线；R2 未开通，文件默认归档在 D1；DeepSeek 线上 Key 尚未配置，当前为规则模式。
+> 当前状态：前端与 Worker + D1 已上线；R2 未开通，文件默认归档在 D1；DeepSeek 线上 Key 已配置，实时抽取已完成线上验收。
 
 ## 1. 当前线上形态
 
@@ -93,7 +93,7 @@ Worker 部署应包含：
 
 ## 6. DeepSeek 配置
 
-当前线上未配置 Key，`/quotesentry/api/health` 返回 `engine: "rules"`。配置后切到实时抽取：
+当前线上已配置 Key，`/quotesentry/api/health` 返回 `engine: "llm"`、`llmConfigured: true`。重新配置时使用：
 
 ```bash
 npx wrangler secret put DEEPSEEK_API_KEY
@@ -108,7 +108,7 @@ DEEPSEEK_TIMEOUT_MS=45000
 DEEPSEEK_MAX_RETRIES=1
 ```
 
-配置后重新验证 `seed-08`：应为 `PRICED / NEEDS_CLARIFICATION / NO_MATCH`，证据 26/26，客户金额 USD 465.00。Key 不进入前端、D1、日志或导出文件。
+线上已验证 `seed-08`：`PRICED / NEEDS_CLARIFICATION / NO_MATCH`，证据 26/26，客户金额 USD 465.00。Key 不进入前端、D1、日志或导出文件。
 
 ## 7. 可选 Basic Auth
 
@@ -141,7 +141,7 @@ API 已通过 Cloudflare Route 在 CDN 层接管 `wayknow.tech/quotesentry/api/*
 - [x] 线上 CSV 310 字节、无成本/毛利字段；PDF 为合法 `%PDF-1.7`。
 - [x] 线上 `POST /send` 返回 403 `SEND_DISABLED`。
 - [x] 线上文本上传写入 D1，`quote_artifacts.storage_backend=d1`。
-- [ ] 配置 DeepSeek Key 后复测实时 LLM 抽取。
+- [x] 配置 DeepSeek Key 后复测实时 LLM 抽取：`engine=llm`、`seed-08` 三行状态与 USD 465.00 均正确。
 
 ## 10. 已知风险
 
