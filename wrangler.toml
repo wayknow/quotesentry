@@ -4,6 +4,10 @@ compatibility_date = "2026-11-23"
 compatibility_flags = ["nodejs_compat"]
 workers_dev = true
 
+routes = [
+  { pattern = "wayknow.tech/quotesentry/api/*", zone_name = "wayknow.tech" }
+]
+
 [vars]
 APP_MODE = "demo"
 SEND_MODE = "disabled"
@@ -11,12 +15,15 @@ SEND_MODE = "disabled"
 [[d1_databases]]
 binding = "DB"
 database_name = "quotesentry-db"
-database_id = "00000000-0000-0000-0000-000000000000"
+database_id = "46d5a6cd-e959-486a-879a-72e3a0939b62"
 migrations_dir = "migrations"
 
-[[r2_buckets]]
-binding = "FILES"
-bucket_name = "quotesentry-files"
+# R2 is optional. Current deployment uses D1 file storage because the account
+# has not enabled R2 billing yet. To switch to R2 later, uncomment this binding,
+# create the bucket, and redeploy.
+# [[r2_buckets]]
+# binding = "FILES"
+# bucket_name = "quotesentry-files"
 
 [[rules]]
 type = "Text"

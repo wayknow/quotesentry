@@ -377,7 +377,7 @@ function healthPayload(env: Env) {
     pricingRuleVersion: dataCache.pricingRules.version,
     sendMode: env.SEND_MODE || 'disabled',
     llmConfigured: hasLlmKey(llm),
-    storage: env.DB && env.FILES ? 'd1+r2' : 'unavailable',
+    storage: env.FILES ? 'd1+r2' : 'd1',
   };
 }
 
@@ -397,8 +397,8 @@ function llmForEnv(env: Env): LlmConfig {
 }
 
 function assertStorage(env: Env): void {
-  if (!env.DB || !env.FILES) {
-    throw new AppError(503, 'STORAGE_UNAVAILABLE', 'D1 或 R2 绑定未配置。');
+  if (!env.DB) {
+    throw new AppError(503, 'STORAGE_UNAVAILABLE', 'D1 绑定未配置。');
   }
 }
 

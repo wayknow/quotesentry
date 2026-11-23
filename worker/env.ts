@@ -2,7 +2,7 @@ import type { D1Database, ExecutionContext, R2Bucket } from './cloudflare.js';
 
 export interface Env {
   DB: D1Database;
-  FILES: R2Bucket;
+  FILES?: R2Bucket;
   APP_MODE?: string;
   SEND_MODE?: string;
   BASIC_AUTH_USER?: string;
@@ -22,4 +22,3 @@ export interface Env {
 export interface WorkerModule {
   fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response>;
 }
-

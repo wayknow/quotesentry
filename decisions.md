@@ -142,3 +142,17 @@
 - DeepSeek Key 改为 Worker secret；`.dev.vars` 只用于本地且禁止提交。
 - 前端通过 `/quotesentry/api` 同源访问，Nginx 反代到 Worker。
 - 远程部署、D1/R2 创建和 Nginx 变更仍需用户明确要求后执行。
+
+## 23. R2 推迟，当前使用 D1-only 文件归档
+
+**Decision**：当前部署不启用 R2。上传原文和客户导出的字节写入 D1 `quote_artifacts.content`，单文件上限 1 MB；保留可选 R2 后端，开通后只需增加 `FILES` binding 即可切换。
+
+**Why**：Cloudflare 账号开通 R2 需要绑定银行卡，用户当前不希望启用。Worker 部署不能绑定不存在的 bucket，因此 R2 会直接阻断上线。D1-only 能保留完整演示闭环，且不需要新增服务。
+
+**Impact**：
+
+- `wrangler.toml` 移除 R2 binding 并保留注释，增加 `wayknow.tech/quotesentry/api/*` Cloudflare Route。
+- D1 migration `0002_d1_artifacts.sql` 新增 `storage_backend` 与 `content BLOB`。
+- 健康检查线上返回 `storage: "d1"`。
+- 大文件超过 1 MB 返回 `413 D1_FILE_TOO_LARGE`；比赛样例不受影响。
+- 以后开通 R2 时恢复 binding 和 bucket 名，其余业务代码不需要改。

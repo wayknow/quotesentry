@@ -8,8 +8,8 @@
 - **产品形态**：桌面优先的 B 端 Web 应用，浏览器访问，不做小程序、不做 Electron、不做原生 App。
 - **核心闭环**：读取邮件文本/Excel → 逐行抽取规格与证据 → 缺参/冲突/目录外阻断 → 目录硬过滤 → 确定性计价 → 人工审批 → CSV/PDF 导出 → 审计追溯。
 - **5 天版范围**：一个产品族、33 个仿真 SKU、9 份询价、两种输入、两个核心页面、正常与异常三条演示链路。
-- **技术栈（5 天版）**：React + Vite + TypeScript + Cloudflare Worker + Zod；D1 持久化、R2 文件归档；模型走 DeepSeek OpenAI 兼容接口。Express + JSON 仅作离线回退。
-- **当前状态**：MVP 主链路已实现并通过 41 个自动化测试；Worker + D1 + R2 本地全链路、文本/XLSX 上传、审批、CSV/PDF 和发送阻断均已通过；远程部署待配置。
+- **技术栈（5 天版）**：React + Vite + TypeScript + Cloudflare Worker + Zod；D1 保存文档与文件归档，R2 为可选后端；模型走 DeepSeek OpenAI 兼容接口。Express + JSON 仅作离线回退。
+- **当前状态**：MVP 主链路已实现并通过 41 个自动化测试；Worker + D1 已部署到 `wayknow.tech/quotesentry/api/`，文本/XLSX 上传、审批、CSV/PDF 和发送阻断均已通过线上验收。
 
 ## 硬性约束
 
@@ -42,7 +42,7 @@ ai_agent_demo/
 ├── server/                    # Express 回退 + 可复用领域层
 │   ├── domain/                # 抽取、门禁、匹配、计价、审批、审计
 │   └── llm/                   # DeepSeek OpenAI 兼容网关
-├── worker/                    # Cloudflare Worker、D1/R2、Worker Auth
+├── worker/                    # Cloudflare Worker、D1、可选 R2、Worker Auth
 ├── migrations/                # D1 Schema
 ├── shared/                    # 共享类型与 Schema
 ├── data/
@@ -60,7 +60,7 @@ ai_agent_demo/
 - **后端**：Cloudflare Worker + TypeScript；路由、状态、审批、审计集中在服务端。Express 仅作离线回退。
 - **校验**：Zod 校验所有请求、模型输出和导出对象；模型输出先校验，再落库或渲染。
 - **计价**：使用整数最小货币单位或 decimal 库；禁止直接使用浮点结果作为正式金额。
-- **持久化**：生产使用 D1；R2 保存上传原文与客户导出。Express 本地回退使用单文件 JSON。
+- **持久化**：生产使用 D1，文件默认以 BLOB 存在 `quote_artifacts`（单文件 ≤1 MB）；配置 R2 后自动切换为 R2。Express 本地回退使用单文件 JSON。
 - **模型**：默认 DeepSeek OpenAI 兼容接口；密钥只在服务端读取，失败时显著降级规则模式。
 - **UI 风格**：企业工具风格，浅色/中性色背景，表格与分栏优先；不要做聊天首页、营销大屏或夸张动画。
 - **语言**：内部文档中文；产品界面中文；客户报价可英文或中英混排。
@@ -141,8 +141,9 @@ rg -n 'localhost|127.0.0.1' client/src
 
 ## 部署
 
-- 前端产物构建到 `work/wayknow/quotesentry/`；API 部署到 Cloudflare Worker，经 Nginx 暴露为 `/quotesentry/api/`。
-- 远程 Worker、D1、R2、secret 和 Nginx 配置均需用户明确要求后再执行，细节见 [deploy.md](deploy.md)。
+- 前端产物构建到 `work/wayknow/quotesentry/`；API 部署到 Cloudflare Worker，由 Cloudflare Route 接管 `/quotesentry/api/*`。
+- Worker 已通过 Cloudflare Route `wayknow.tech/quotesentry/api/*` 接入，不需要 Nginx 反代这个 API 路径。
+- 远程 secret、D1 迁移和重新部署需用户明确要求后执行，细节见 [deploy.md](deploy.md)。
 - 不要把 `.dev.vars`、DeepSeek Key、D1 状态或本地 R2 文件提交到任一仓库。
 
 ## 许可与上游

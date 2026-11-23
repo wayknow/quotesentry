@@ -111,12 +111,12 @@ QuoteSentry 的价值不是“生成一封报价邮件”，而是判断：**这
 └────────────┘ └──┬──────────────────┘
                   │
           ┌───────▼────────┐      ┌──────────────┐
-          │ D1             │      │ R2           │
+          │ D1             │      │ R2（可选）   │
           │ 报价/审批/审计 │      │ 原文/导出    │
           └────────────────┘      └──────────────┘
 ```
 
-Express + 本地 JSON 仅作为离线开发回退，生产与 wayknow 部署使用 Worker + D1 + R2。
+Express + 本地 JSON 仅作为离线开发回退，生产与 wayknow 部署使用 Worker + D1；R2 是后续可选归档后端。
 
 ### 可复用与必须重写
 
@@ -237,7 +237,7 @@ foreignAmount   = cnyAmount / cnyPerUnitCurrency
 | D4 | 审单界面、审批/override、CSV/PDF 导出、审计时间线 | ✅ 完成 |
 | D5 | 真实 DeepSeek smoke test、录 5 分钟 demo、参赛说明 | ✅ 完成 |
 
-**当前结论**：已采用 greenfield thin slice，主链路、41 个测试、真实模型调用、Worker + D1 + R2 本地全链路、演示录屏和 A4 一页纸均已完成；剩余风险集中在远程部署、Nginx 配置和现场网络。
+**当前结论**：已采用 greenfield thin slice，主链路、41 个测试、真实模型调用、Worker + D1 线上链路、演示录屏和 A4 一页纸均已完成；剩余风险集中在现场网络和 DeepSeek 线上 Key。
 
 ## 14. 相关文档
 

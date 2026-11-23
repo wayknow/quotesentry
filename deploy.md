@@ -1,83 +1,59 @@
 # Deployment Guide
 
-> 当前状态：Worker + D1 + R2 已在本机（Wrangler local）完成全链路验证；尚未执行远程 Cloudflare 部署，也尚未配置 wayknow 生产 Nginx。
+> 当前状态：前端与 Worker + D1 已上线；R2 未开通，文件默认归档在 D1；DeepSeek 线上 Key 尚未配置，当前为规则模式。
 
-## 1. 目标形态
+## 1. 当前线上形态
 
 ```text
 https://wayknow.tech/quotesentry/
-  → wayknow 静态前端（work/wayknow/quotesentry）
+  → wayknow 静态前端（仓库目录 quotesentry/）
 
-https://wayknow.tech/quotesentry/api/
-  → Nginx 反向代理
-  → Cloudflare Worker: quotesentry-api
-  → DeepSeek / D1 / R2
+https://wayknow.tech/quotesentry/api/*
+  → Cloudflare Route（拦截请求，不进入 Nginx）
+  → Worker: quotesentry-api
+  → DeepSeek（配置 Key 后）/ D1
 ```
 
-- 前端：React + Vite，构建到 `../wayknow/quotesentry`，`base=/quotesentry/`。
-- API：Cloudflare Worker，`worker/index.ts`，与 `app_survey` 一样由服务端读取 DeepSeek Key。
-- 数据库：D1 保存询价文档、报价、审批和审计的完整 JSON；`quote_artifacts` 保存 R2 文件索引。
-- 文件：R2 保存上传原文与审批后的客户 CSV/PDF。
-- 本地回退：`server/` 的 Express + `data/db.json` 仍可运行，用于离线开发与对比，不作为生产存储。
+- Worker 直连域名：`https://quotesentry-api.jinchanghu1982.workers.dev`（本机网络可能无法直连，以自定义 Route 为准）。
+- D1：`quotesentry-db`，`database_id=46d5a6cd-e959-486a-879a-72e3a0939b62`。
+- Cloudflare Route：`wayknow.tech/quotesentry/api/*`。
+- R2：未开通，不参与当前部署。
+- 本地回退：Express + `data/db.json`，不作为生产存储。
 
-## 2. 首次配置 Cloudflare
+## 2. 数据存储
 
-先在本机登录 Wrangler。服务器是无头环境，所有 `wrangler` 命令都应在有浏览器的 Mac 上执行。
+### D1
 
-```bash
-npx wrangler login
-```
+| 表 | 内容 |
+|---|---|
+| `rfq_documents` | 完整 `RfqDocument` JSON，以及 id、状态、客户、更新时间等检索列 |
+| `quote_artifacts` | 上传原文与客户导出的元数据、SHA-256、可选 R2 key、D1 BLOB |
 
-创建 D1，并把输出的 `database_id` 写进 `wrangler.toml`：
+当前 `storage_backend=d1`：
 
-```bash
-npx wrangler d1 create quotesentry-db
-```
+- 上传原文、客户 CSV/PDF 的字节都存在 `quote_artifacts.content`。
+- 单文件上限 1 MB；超过时返回 `413 D1_FILE_TOO_LARGE`。
+- 询价正文本身另存于 `rfq_documents.payload`，刷新后可从 D1 恢复。
 
-仓库中的占位值是 `00000000-0000-0000-0000-000000000000`，只适用于本地模拟。
+### R2（后续可选）
 
-创建 R2：
-
-```bash
-npx wrangler r2 bucket create quotesentry-files
-```
-
-执行迁移：
-
-```bash
-npm run db:migrate:local
-npm run db:migrate:remote
-```
-
-配置 DeepSeek Key（不会进入仓库或浏览器）：
-
-```bash
-npx wrangler secret put DEEPSEEK_API_KEY
-```
+`worker/artifacts.ts` 已支持 R2：只要 `wrangler.toml` 配置 `FILES` binding，文件会自动改存 R2，D1 继续保存索引。当前账号未开通 R2，部署时不能保留未创建的 bucket binding。
 
 ## 3. 本地开发
 
 ```bash
 npm install
 cp .dev.vars.example .dev.vars
-# 编辑 .dev.vars，填入 DEEPSEEK_API_KEY；留空则显示规则模式
+# 可选：填入 DEEPSEEK_API_KEY；留空为规则模式
 npm run db:migrate:local
 npm run dev:worker
 ```
 
 - Worker API：`http://127.0.0.1:8787/api/health`
 - Express 回退：`npm run dev` 或 `npm start`
-- `.dev.vars` 已被 git 忽略，不能提交真实 Key。
+- `.dev.vars` 已被 git 忽略。
 
-快速检查：
-
-```bash
-curl -s http://127.0.0.1:8787/api/health | jq
-curl -s http://127.0.0.1:8787/api/bootstrap | jq '.documents | length'
-curl -s -X POST http://127.0.0.1:8787/api/rfqs/seed-08/analyze | jq '.lines[].status'
-```
-
-## 4. 构建到 wayknow
+## 4. 前端构建与发布
 
 ```bash
 npm run check
@@ -85,98 +61,91 @@ npm test
 npm run build:wayknow
 ```
 
-构建结果直接写入：
+构建直接写入：
 
 ```text
 ../wayknow/quotesentry/index.html
 ../wayknow/quotesentry/assets/*
 ```
 
-该目录只包含前端产物，不包含 Worker 源码、测试、仿真目录源文件或 Key。
-
-## 5. 部署 Worker
+提交并推送 `wayknow` 仓库后，服务器执行：
 
 ```bash
+ssh ubuntu@43.160.219.45 "cd /var/www/html && sudo git pull"
+```
+
+`quotesentry/` 是独立页面，不在主导航、页脚或 sitemap 中。
+
+## 5. Worker 部署
+
+```bash
+npm run db:migrate:remote
 npm run worker:dry-run
 npm run worker:deploy
 ```
 
-部署后记录 Wrangler 输出的 Worker hostname，例如：
+Worker 部署应包含：
 
-```text
-https://quotesentry-api.<account>.workers.dev
-```
+- `env.DB` → `quotesentry-db`
+- Route `wayknow.tech/quotesentry/api/*`
+- `APP_MODE=demo`
+- `SEND_MODE=disabled`
 
-## 6. wayknow Nginx
+## 6. DeepSeek 配置
 
-在 wayknow 服务器的 Nginx 配置中加入下面两段；长前缀必须位于通用静态 `location /` 之前：
-
-```nginx
-location /quotesentry/api/ {
-    proxy_pass https://<quotesentry-worker-host>/api/;
-    proxy_http_version 1.1;
-    proxy_set_header Host $host;
-    proxy_set_header X-Real-IP $remote_addr;
-    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-    proxy_set_header X-Forwarded-Proto $scheme;
-}
-
-location /quotesentry/ {
-    try_files $uri $uri/ /quotesentry/index.html;
-}
-```
-
-验证并重载：
+当前线上未配置 Key，`/quotesentry/api/health` 返回 `engine: "rules"`。配置后切到实时抽取：
 
 ```bash
-sudo nginx -t && sudo systemctl reload nginx
+npx wrangler secret put DEEPSEEK_API_KEY
 ```
 
-## 7. 可选 Basic Auth
+可用变量：
 
-预发演示建议开启认证。Worker 支持与 Express 相同的变量：
+```text
+DEEPSEEK_BASE_URL=https://api.deepseek.com
+DEEPSEEK_MODEL=deepseek-chat
+DEEPSEEK_TIMEOUT_MS=45000
+DEEPSEEK_MAX_RETRIES=1
+```
+
+配置后重新验证 `seed-08`：应为 `PRICED / NEEDS_CLARIFICATION / NO_MATCH`，证据 26/26，客户金额 USD 465.00。Key 不进入前端、D1、日志或导出文件。
+
+## 7. 可选 Basic Auth
 
 ```bash
 npx wrangler secret put BASIC_AUTH_USER
 npx wrangler secret put BASIC_AUTH_PASSWORD
 ```
 
-- 两项必须同时配置；只配置一项时 API 返回 500，属于配置失败而不是放行。
-- Worker 认证只保护 `/quotesentry/api/`；如要同时保护静态页面，在 Nginx 对 `/quotesentry/` 配置 `auth_basic`。
-- 不要同时在 Nginx 和 Worker 启用，避免双重认证。
-- 这是预发保护，不是正式账号、角色或租户体系。
+- 两项必须同时配置；只配置一项时 API 返回 500。
+- Worker 认证只保护 `/quotesentry/api/`，不保护静态页。
+- 如要保护静态页，需在 wayknow Nginx 对 `/quotesentry/` 增加 `auth_basic`，不要与 Worker Basic Auth 同时启用。
+- 当前演示未配置 Basic Auth。
 
-## 8. 数据布局
+## 8. 为什么不改 Nginx
 
-### D1
+API 已通过 Cloudflare Route 在 CDN 层接管 `wayknow.tech/quotesentry/api/*`，请求不会落到 Nginx。因此当前只需静态前端部署，不需要增加 `/quotesentry/api/` 的 `proxy_pass`。
 
-| 表 | 内容 |
-|---|---|
-| `rfq_documents` | 完整 `RfqDocument` JSON，以及 id、状态、客户、更新时间等检索列 |
-| `quote_artifacts` | R2 对象索引：文档、报价、类型、格式、key、大小和 SHA-256 |
-
-### R2
-
-```text
-rfqs/<documentId>/source/<filename>
-rfqs/<documentId>/exports/quotesentry-<documentId>.csv
-rfqs/<documentId>/exports/quotesentry-<documentId>.pdf
-```
-
-客户 CSV/PDF 不包含成本、毛利、内部异常、置信度或审批人信息。
+如果以后不再使用 Cloudflare Route，再回退到 Nginx 反代 Worker。
 
 ## 9. 验收清单
 
-- [ ] `npm run check` 通过。
-- [ ] `npm test` 通过。
-- [ ] `npm run worker:dry-run` 通过。
-- [ ] 本地 `/api/health` 返回 `storage: "d1+r2"`。
-- [ ] `seed-08` 为 `PRICED / NEEDS_CLARIFICATION / NO_MATCH`，客户金额 USD 465.00。
-- [ ] `seed-06` 审批前 409，override 后可审批。
-- [ ] `POST /send` 在 `SEND_MODE=disabled` 时返回 403。
-- [ ] 文本与 XLSX 上传均写入 R2，询价可在刷新后从 D1 读回。
-- [ ] CSV 不含 margin/cost/毛利/成本字段，PDF 以 `%PDF` 开头。
-- [ ] `/quotesentry/` 静态资源加载成功。
-- [ ] `/quotesentry/api/health` 经 Nginx 返回 200。
+- [x] `npm run check` 通过。
+- [x] `npm test`：8 files / 41 tests 通过。
+- [x] `npm run worker:dry-run` 通过。
+- [x] 线上静态页 `/quotesentry/` 返回 200。
+- [x] 线上 `/quotesentry/api/health` 返回 200，`storage=d1`。
+- [x] 线上 bootstrap 返回 9 份样例与 33 个 SKU。
+- [x] 线上 `seed-08`：`PRICED / NEEDS_CLARIFICATION / NO_MATCH`，26 条证据，USD 465.00。
+- [x] 线上审批成功，整单毛利 21.09%。
+- [x] 线上 CSV 310 字节、无成本/毛利字段；PDF 为合法 `%PDF-1.7`。
+- [x] 线上 `POST /send` 返回 403 `SEND_DISABLED`。
+- [x] 线上文本上传写入 D1，`quote_artifacts.storage_backend=d1`。
+- [ ] 配置 DeepSeek Key 后复测实时 LLM 抽取。
 
-未经用户明确要求，不执行远程部署、不修改 wayknow 生产服务器。
+## 10. 已知风险
+
+- 首次访问静态 JS/CSS 偶发较慢，需在比赛前复查 Cloudflare 缓存和现场网络。
+- D1 单文件上限 1 MB，不适合大 Excel；比赛样例均远低于上限。
+- D1 备份、配额和恢复演练尚未完成。
+- API 当前未启用 Basic Auth，正式公开前应加保护。

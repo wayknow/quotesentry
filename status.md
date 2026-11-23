@@ -9,13 +9,13 @@
 | 产品方向 | ✅ QuoteSentry（报价哨兵） |
 | 产品形态 | ✅ 桌面优先 Web 应用 |
 | 5 天 MVP 范围 | ✅ 已冻结 |
-| 技术底座 | ✅ React + Vite + TypeScript + Cloudflare Worker + Zod + D1 + R2 |
+| 技术底座 | ✅ React + Vite + TypeScript + Cloudflare Worker + Zod + D1 |
 | 代码实现 | ✅ 主链路可运行 |
 | Demo 数据 | ✅ 33 SKU / 9 份仿真询价 / 3 客户 |
 | 自动化测试 | ✅ 41 个测试通过 |
 | DeepSeek 实调用 | ✅ 服务端直连 smoke 已通过 |
 | wayknow 前端 | ✅ 已构建到 `work/wayknow/quotesentry/` |
-| 线上部署 | 🟡 Worker/D1/R2 本地全链路已验证；远程资源和 Nginx 待配置 |
+| 线上部署 | ✅ `wayknow.tech/quotesentry/` + Worker API + D1 已上线 |
 | 比赛录屏/路演材料 | ✅ 演示视频、SRT、A4 一页纸均已完成 |
 
 ## ✅ Done
@@ -40,12 +40,15 @@
 - 完成 `/quotesentry/` 本地生产构建验证：静态资源、子路径 API、深层刷新、审批与 CSV/PDF 导出均通过。
 - 实现可选 Express Basic Auth：未认证/错误密码 401，正确密码可访问页面、静态资源和 API；本地默认关闭。
 - 新增 Cloudflare Worker API：复用领域层，支持 `/api` 与 `/quotesentry/api` 两种前缀。
-- 新增 D1 持久化：`rfq_documents` 保存完整询价 JSON，`quote_artifacts` 保存 R2 文件索引。
-- 新增 R2 归档：上传原文与审批后的客户 CSV/PDF 均写入 R2，并记录 SHA-256。
+- 新增 D1 持久化：`rfq_documents` 保存完整询价 JSON，`quote_artifacts` 保存文件元数据与 BLOB。
+- 新增文件归档：上传原文与审批后的客户 CSV/PDF 默认写入 D1，并记录 SHA-256；R2 保留为可选后端。
 - 实现 Worker Basic Auth，行为与 Express 版本一致；配置不完整时失败关闭。
 - 完成 Worker 本地全链路：健康检查、bootstrap、文本/XLSX 上传、`seed-08` 审单、审批、CSV/PDF、发送阻断、重置。
-- 完成 R2 一致性校验：导出对象与 API 响应 SHA-256 完全相同。
+- 完成 D1 文件一致性校验：归档字节数与导出响应一致。
 - 将 React 前端构建到 `work/wayknow/quotesentry/`，资源路径为 `/quotesentry/assets/`，API 自动走 `/quotesentry/api`。
+- 创建线上 D1 `quotesentry-db`（`46d5a6cd-e959-486a-879a-72e3a0939b62`）并执行 0001/0002 迁移。
+- 部署 Worker `quotesentry-api`，通过 Cloudflare Route 接管 `wayknow.tech/quotesentry/api/*`。
+- 线上验收完成：静态页 200、bootstrap 9 份样例、`seed-08` 三行状态与 USD 465.00、审批、CSV/PDF、403 发送阻断、文本上传与 D1 归档。
 
 ## 验证结果
 
@@ -67,10 +70,10 @@ npm run db:migrate:local ✅
 - CSV 导出不含 margin/cost/毛利/成本等字段。
 - PDF 返回合法 `%PDF` 文件。
 - `POST /send` 在 `SEND_MODE=disabled` 时返回 HTTP 403。
-- Worker 本地 `/api/health`：`storage: d1+r2`，演示模式，`sendMode: disabled`。
+- Worker 线上 `/quotesentry/api/health`：`storage: d1`，演示模式，`sendMode: disabled`。
 - Worker 本地 `seed-08`：规则模式下仍为 `PRICED / NEEDS_CLARIFICATION / NO_MATCH`，USD 465.00，整单毛利 21.09%。
-- Worker 本地文本上传与 XLSX 上传：D1 可读回、R2 可读回、源文件 SHA-256 与 `quote_artifacts` 一致。
-- R2 中 CSV 对象与 API 下载一致；PDF 为合法 `%PDF-1.7`。
+- Worker 线上文本上传：文档与源文件均可在 D1 读回，`quote_artifacts` 的 `storage_backend=d1`。
+- 线上导出的 CSV 为 310 字节且不含成本/毛利；PDF 为 1976 字节、合法 `%PDF-1.7`。
 - XLSX 上传后可完成表头规则抽取和计价。
 - `seed-08` 真实 LLM 抽取：第 1 行 `PRICED`、第 2 行缺 `surfaceTreatment`、第 3 行 `NO_MATCH`，证据 26/26 已验证；连续 3 次状态与金额稳定。
 - 真实 LLM 结果审批成功，生成 USD 465.00 客户报价；CSV/PDF 导出成功，客户 CSV 不含成本/毛利。
@@ -85,9 +88,9 @@ npm run db:migrate:local ✅
 
 | 任务 | 完成定义 |
 |---|---|
-| Cloudflare 远程资源 | 创建线上 D1/R2、替换真实 `database_id`、执行远程迁移并配置 `DEEPSEEK_API_KEY` |
-| Worker 远程部署 | `npm run worker:deploy` 后记录 Worker hostname |
-| wayknow API 接入 | 配置 Nginx `/quotesentry/api/` 反代，线上验证页面与 API |
+| DeepSeek 线上 Key | 配置 `DEEPSEEK_API_KEY` Worker secret，把当前规则模式切换为实时抽取 |
+| D1 备份与配额 | 比赛后补自动备份、配额告警和恢复演练 |
+| 静态资源缓存/带宽 | 线上首次资源加载偶发较慢，比赛前复查 Cloudflare 缓存策略 |
 | 现场彩排 | 用一页纸 + 录屏完成一次 3–5 分钟讲解，确认节奏、追问和故障兜底 |
 
 ## ⚠️ Risks
@@ -96,14 +99,14 @@ npm run db:migrate:local ✅
 |---|---|---|
 | 现场网络/限流 | 演示时模型调用可能超时 | 已通过 API smoke；保留规则模式与录屏兜底 |
 | 模型输出漂移 | 字段缺失或证据不对齐 | Zod 校验 + 原文子串验证 + 失败降级 |
-| Worker/D1/R2 未远程部署 | 刷新 wayknow 页面时 API 仍会连接失败 | 按 deploy.md 创建资源、部署 Worker、配置 Nginx |
+| DeepSeek Key 未配置 | 线上显示规则模式，不是实时模型抽取 | 用户配置 Worker secret 后重新验收 `seed-08` |
 | API 鉴权未启用 | 公网可直接调用演示 API | 预发同时配置 Worker Basic Auth；正式版做登录与角色权限 |
-| D1/R2 运维 | 备份、配额和误删未验证 | 比赛版只开放预发；正式上线前补备份和配额告警 |
+| D1 运维 | 备份、配额和误删未验证 | 比赛版只开放预发；正式上线前补备份和配额告警 |
 | xlsx 依赖安全告警 | 恶意表格风险 | 只接收可信文件；生产加隔离解析/病毒扫描 |
 | 极端低价毛利率展示 | 毛利率可能小于 -100% | UI 显示真实数字；路演明确这是模拟口径 |
 
 ## 下一步
 
-1. 创建线上 D1/R2，替换 `wrangler.toml` 的占位 `database_id`，执行远程迁移。
-2. 配置 Worker secrets，部署 Worker，并在 wayknow Nginx 增加 `/quotesentry/api/` 反代。
-3. 线上验证 `/quotesentry/`、`/quotesentry/api/health`、`seed-08` 审批与导出后，再做正式彩排。
+1. 配置 `DEEPSEEK_API_KEY` Worker secret，线上复测 `seed-08` 的真实模型抽取。
+2. 用线上地址完成一次彩排，检查静态资源首次加载和 API 延迟。
+3. 比赛前执行 `POST /api/reset-demo`，确保从 9 份干净样例开始。

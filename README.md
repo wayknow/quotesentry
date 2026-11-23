@@ -6,7 +6,7 @@
 
 MVP 已可运行：33 个仿真 SKU、9 份仿真询价、邮件文本 + Excel/CSV 输入、逐行证据、目录硬匹配、确定性计价、人工审批、毛利 override、CSV/PDF 导出和审计时间线。
 
-正式部署形态为 **Cloudflare Worker + D1 + R2**，与现有 `app_survey` 一致：Worker 负责 API 与 DeepSeek 调用，D1 保存询价/报价/审批/审计，R2 保存上传原文和客户导出。Express + 本地 JSON 保留为离线开发回退。
+正式部署形态为 **Cloudflare Worker + D1**：Worker 负责 API 与 DeepSeek 调用，D1 保存询价、报价、审批、审计以及上传原文和客户导出的文件字节。R2 保留为后续可选归档后端；当前账号未开通 R2，不影响演示主链路。Express + 本地 JSON 保留为离线开发回退。
 
 ```bash
 npm install
@@ -50,14 +50,14 @@ QuoteSentry 读取邮件文本和 Excel 询价，逐行抽取规格并回指原�
 - 前端：React 18 + Vite + TypeScript，桌面优先。
 - 后端：Cloudflare Worker + TypeScript + Zod；Express 仅作本地回退。
 - 模型：DeepSeek OpenAI 兼容接口；失败时降级规则抽取并显著标注。
-- 数据：D1 持久化询价与审计，R2 保存上传和导出；`POST /api/reset-demo` 可重置演示文档。
+- 数据：D1 持久化询价、审计和文件归档（单文件上限 1 MB）；`POST /api/reset-demo` 可重置演示文档。
 - 文件：Worker 内用 `xlsx` 解析 Excel，`pdf-lib` 生成客户 PDF。
 
 ## 常用命令
 
 ```bash
 npm run dev       # 同时启动 Vite 和 Express（离线回退）
-npm run dev:worker # 启动本地 Cloudflare Worker（D1/R2）
+npm run dev:worker # 启动本地 Cloudflare Worker（D1）
 npm run db:migrate:local # 初始化本地 D1
 npm run check     # TypeScript 类型检查
 npm test          # 41 个金标/领域/Worker 测试
@@ -73,7 +73,7 @@ npm start         # Express 回退
 
 ```text
 client/               React 工作台
-worker/               Cloudflare Worker、D1/R2 存储、Auth
+worker/               Cloudflare Worker、D1 存储、Auth
 server/               Express 回退、领域规则、DeepSeek 网关、导出
 server/domain/        抽取、门禁、硬匹配、计价、审批、审计
 migrations/           D1 Schema
@@ -103,7 +103,7 @@ tests/golden/         计价、门禁、匹配、流程、导出隔离测试
 - DeepSeek 服务端连通性、`seed-08` 真实 LLM 抽取、审批和导出已实测通过；仍需准备规则模式录屏兜底。
 - 不做 PDF 原文件解析、OCR、真实邮箱/ERP、多租户、登录权限。
 - 毛利为税前、未计出口退税的演示口径。
-- 线上 Worker 已实现 D1/R2 和可选 Basic Auth；正式账号、角色和多租户仍不在比赛版范围。
+- 线上 Worker 已部署到 `https://wayknow.tech/quotesentry/api/`，使用 D1 和可选 Basic Auth；正式账号、角色、多租户和 R2 归档仍不在当前范围。
 
 ## 上游与许可
 
