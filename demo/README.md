@@ -4,23 +4,25 @@
 |---|---|
 | 文件 | `QuoteSentry-demo-zh.mp4` |
 | 字幕 | `QuoteSentry-demo-zh.srt` |
-| 时长 | 3 分 34 秒 |
-| 画面 | 1440 × 900，H.264，25 fps |
-| 音频 | 中文旁白，AAC 立体声 |
-| 录制日期 | 2026-11-20 |
-| 文件大小 | 约 9 MB |
-| SHA-256 | `c1465ee62a39df645499368619f5a7c82e3e44f630dbd5bc34275664781f1210` |
+| 时长 | 2 分 43 秒（162.67 秒） |
+| 画面 | 1600 × 1000，H.264，30 fps；内嵌 1440 × 900 最新页面截图 |
+| 音频 | 中文旁白，AAC 单声道，22.05 kHz |
+| 基于代码 | `5d73d3b feat: add three-round conversational RFQ review` |
+| 录制日期 | 2026-11-23 |
+| 文件大小 | 约 18 MB |
+| MP4 SHA-256 | `370989b623d923581608d1518d489cd5dd98643c8391f2b6b6d4cdbe585a0e4f` |
+| SRT SHA-256 | `d0ac6a1e88ab6d6d97180ae888b84b45f73345d938d95d0f965a57052125617e` |
 
 ## 内容
 
-1. 三行紧固件询价逐行抽取。
-2. 可报价、待澄清、目录外三种结果。
-3. 原文证据回指与目录硬匹配。
-4. 客户视图、内部成本隔离和人工审批。
-5. 客户 CSV 导出。
-6. 审计时间线。
-7. 毛利越界 override 与留痕。
-8. “不是聊天套壳”和仿真数据声明。
+1. 最新 `seed-08` 三行询价逐行抽取。
+2. 连续三轮对话：首轮审单、补充第二行镀锌并重算、解释第三行目录外原因。
+3. 可报价、待澄清、目录外三种结果与原文证据回指。
+4. 对话不会自动审批：审批、override、导出和发送均需人工按钮。
+5. 客户视图与内部成本/毛利隔离。
+6. 人工确认、客户 CSV/PDF 导出和发送禁用。
+7. 审计时间线中的模型、规则版本、补充证据、审批人与导出动作。
+8. “模型可替换、业务资产留在客户侧”的壁垒说明和仿真数据声明。
 
 ## 边界
 
@@ -32,3 +34,15 @@
 ## 重新录制
 
 演示步骤、预期结果和故障兜底见 [docs/DEMO.md](../docs/DEMO.md)。录制前先重置演示数据，并确认左下角显示 `DeepSeek 已接入`。
+
+可复现流水线：
+
+```bash
+npm run dev                    # 另开终端，保持 5173/3001 运行
+node scripts/capture-video-scenes.mjs
+swift -module-cache-path /tmp/swift-module-cache scripts/tts-demo-scenes.swift 0.535
+swiftc -module-cache-path /tmp/swift-module-cache -O scripts/render-demo-video.swift -o /tmp/render-demo-video
+/tmp/render-demo-video demo/QuoteSentry-demo-zh.mp4 demo/QuoteSentry-demo-zh.srt
+```
+
+截图脚本依赖本机 Chrome CDP（`127.0.0.1:9222`）；TTS 与视频编码需在系统媒体权限可用的终端中执行。

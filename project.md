@@ -239,7 +239,7 @@ foreignAmount   = cnyAmount / cnyPerUnitCurrency
 | D4 | 审单界面、审批/override、CSV/PDF 导出、审计时间线 | ✅ 完成 |
 | D5 | 真实 DeepSeek smoke test、录 5 分钟 demo、参赛说明 | ✅ 完成 |
 
-**当前结论**：已采用 greenfield thin slice，主链路、三轮对话补参、46 个测试、真实模型调用、Worker + D1 线上链路、演示录屏初版和 A4 一页纸均已完成；DeepSeek 线上 Key 已配置并验收。参赛视频仍需从 3:34 压到 3 分钟以内，剩余风险集中在现场网络和模型额度/限流。
+**当前结论**：已采用 greenfield thin slice，主链路、三轮对话补参、46 个测试、真实模型调用、Worker + D1 线上链路、2 分 43 秒参赛视频和 A4 一页纸均已完成；DeepSeek 线上 Key 已配置并验收。剩余风险集中在现场网络和模型额度/限流。
 
 ## 14. 相关文档
 
@@ -250,5 +250,5 @@ foreignAmount   = cnyAmount / cnyPerUnitCurrency
 - [docs/PITCH.md](docs/PITCH.md)：一页纸结构与路演问答。
 - [demo/QuoteSentry-one-pager.pdf](demo/QuoteSentry-one-pager.pdf)：A4 单页路演稿，严格 1 页。
 - [demo/QuoteSentry-one-pager.png](demo/QuoteSentry-one-pager.png)：一页纸高清预览图。
-- [demo/QuoteSentry-demo-zh.mp4](demo/QuoteSentry-demo-zh.mp4)：3 分 34 秒中文旁白演示视频。
+- [demo/QuoteSentry-demo-zh.mp4](demo/QuoteSentry-demo-zh.mp4)：2 分 43 秒中文旁白演示视频（含三轮对话）。
 - [AGENTS.md](AGENTS.md)：Agent 编码约束与自检。
