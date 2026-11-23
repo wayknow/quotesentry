@@ -45,6 +45,10 @@ APP_MODE=demo
 SEND_MODE=disabled
 DB_PATH=./data/db.json
 
+# 可选：预发/演示阶段的 HTTP Basic Auth；两项同时留空即关闭
+BASIC_AUTH_USER=
+BASIC_AUTH_PASSWORD=
+
 LLM_PROVIDER=deepseek
 DEEPSEEK_API_KEY=
 DEEPSEEK_BASE_URL=https://api.deepseek.com
@@ -70,6 +74,30 @@ npm run test:deepseek
 - 旧变量 `LLM_API_KEY`、`LLM_BASE_URL`、`LLM_MODEL` 仍兼容，但新配置统一使用 `DEEPSEEK_*`。
 - `SEND_MODE=disabled` 时 `/api/rfqs/:id/send` 始终返回 HTTP 403。
 - `APP_MODE=demo` 时前端固定显示“仿真演示”。
+
+### 应用层 Basic Auth
+
+预发和公开演示建议开启 Basic Auth。认证由 Express 在最前面处理，页面、静态资源和 API 都会受到保护；Nginx 只负责反向代理，不需要重复加 `auth_basic`。
+
+```env
+BASIC_AUTH_USER=demo
+BASIC_AUTH_PASSWORD=<使用随机强密码>
+```
+
+- 两项必须同时配置；只配置一项时服务启动失败。
+- 未认证或密码错误返回 HTTP 401 和 `WWW-Authenticate: Basic`。
+- 本地默认留空，不改变现有演示体验。
+- 这是预发保护，不是正式客户身份体系；正式版仍要做登录、角色和租户隔离。
+
+本地验证：
+
+```bash
+PORT=3102 BASIC_AUTH_USER=demo BASIC_AUTH_PASSWORD='test-pass-2026' \
+  DB_PATH=/tmp/quotesentry-auth-db.json npm start
+
+curl -s -o /dev/null -w '%{http_code}\n' http://127.0.0.1:3102/quotesentry/
+curl -s -o /dev/null -w '%{http_code}\n' -u demo:test-pass-2026 http://127.0.0.1:3102/quotesentry/
+```
 
 ## 5. 数据与重置
 
@@ -107,9 +135,19 @@ npm start
 
 如果 API 使用独立域名，可设置 `VITE_API_BASE_URL`，并自行配置 CORS 白名单。
 
+本地验证记录（2026-11-23）：
+
+- `VITE_BASE_PATH=/quotesentry/ npm run build` 通过，资源路径均为 `/quotesentry/assets/...`。
+- `PORT=3101 DB_PATH=/tmp/quotesentry-subpath-db.json npm start` 通过。
+- `/quotesentry/`、`/quotesentry/assets/*`、`/quotesentry/api/health` 均返回 200。
+- `/quotesentry` 正确 301 到 `/quotesentry/`；`/quotesentry/some/deep/path` 回退到应用入口。
+- 子路径下完成 `seed-08` 分析、审批、CSV/PDF 导出和发送 403 验证。
+
 ## 7. Nginx 草案
 
 > 执行前先确认 `work/wayknow` 现有 Nginx 配置、HTTPS 和部署流程；以下仅为草案。
+
+> 认证已在 Express 应用层实现；如果改用 Nginx `auth_basic`，不要和 `BASIC_AUTH_*` 同时开启，避免重复认证。
 
 ### 方案 A：整站反代到 QuoteSentry Express
 
@@ -170,9 +208,11 @@ location /quotesentry/api/ {
 - [x] 仿真数据横幅可见。
 - [x] 真实 DeepSeek Key smoke test：`npm run test:deepseek`。
 - [x] `seed-08` 真实 LLM 抽取、审批、CSV/PDF 导出与发送阻断通过。
-- [ ] 子路径 `VITE_BASE_PATH=/quotesentry/` 在 wayknow 预发环境验证。
-- [ ] 刷新深层页面不 404。
-- [ ] `/quotesentry/api/health` 可访问。
+- [x] 子路径 `VITE_BASE_PATH=/quotesentry/` 在本地生产构建验证。
+- [x] 刷新深层页面不 404。
+- [x] `/quotesentry/api/health` 可访问。
+- [x] 可选 Basic Auth 本地验证：401/200、静态资源和 API 鉴权通过。
+- [ ] 在 wayknow 预发环境验证。
 - [ ] 录屏备份和路演脚本准备完毕。
 
 ## 11. 执行原则

@@ -235,7 +235,7 @@ foreignAmount   = cnyAmount / cnyPerUnitCurrency
 | D4 | 审单界面、审批/override、CSV/PDF 导出、审计时间线 | ✅ 完成 |
 | D5 | 真实 DeepSeek smoke test、录 5 分钟 demo、参赛说明 | ✅ 完成 |
 
-**当前结论**：已采用 greenfield thin slice，主链路、31 个测试、真实模型调用、演示录屏和 A4 一页纸均已完成；剩余风险集中在部署和现场网络。
+**当前结论**：已采用 greenfield thin slice，主链路、36 个测试、真实模型调用、演示录屏和 A4 一页纸均已完成；剩余风险集中在部署和现场网络。
 
 ## 14. 相关文档
 

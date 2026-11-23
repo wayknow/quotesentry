@@ -17,6 +17,8 @@ npm run dev
 
 DeepSeek 默认走 OpenAI 兼容接口。复制 `.env.example` 为 `.env`，填入 `DEEPSEEK_API_KEY` 后重启服务端即可；Key 只由 Express 服务端读取，不进入浏览器。未配置 Key 时界面明确显示“规则模式”，不会冒充 AI。配置后可运行 `npm run test:deepseek` 做一次真实连通性 smoke test。
 
+预发/公开演示可同时配置 `BASIC_AUTH_USER` 与 `BASIC_AUTH_PASSWORD` 开启可选 HTTP Basic Auth；本地默认关闭。
+
 ## 产品一句话
 
 QuoteSentry 读取邮件文本和 Excel 询价，逐行抽取规格并回指原文；能确认的行进入目录匹配和确定性计价，缺参、冲突、目录外或毛利越界的行被明确阻断，最终由人审批后才允许导出。
@@ -53,7 +55,7 @@ QuoteSentry 读取邮件文本和 Excel 询价，逐行抽取规格并回指原�
 ```bash
 npm run dev       # 同时启动 Vite 和 Express
 npm run check     # TypeScript 类型检查
-npm test          # 31 个金标/领域测试
+npm test          # 36 个金标/领域测试
 npm run test:deepseek  # 用真实 Key 直连 DeepSeek 做 smoke test
 npm run seed      # 校验 9 份仿真询价均可识别
 npm run build     # 生产构建

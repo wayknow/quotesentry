@@ -1,5 +1,6 @@
 import path from 'node:path';
 import express from 'express';
+import { basicAuth } from './auth.js';
 import { config } from './config.js';
 import { store } from './store.js';
 import { api, errorHandler, resolveStaticDir } from './routes.js';
@@ -8,6 +9,12 @@ store.init();
 
 const app = express();
 app.disable('x-powered-by');
+if (Boolean(config.basicAuth.user) !== Boolean(config.basicAuth.password)) {
+  throw new Error('BASIC_AUTH_USER 和 BASIC_AUTH_PASSWORD 必须同时配置，或同时留空。');
+}
+if (config.basicAuth.user) {
+  app.use(basicAuth(config.basicAuth.user, config.basicAuth.password));
+}
 app.use(express.json({ limit: '2mb' }));
 app.use(express.urlencoded({ extended: false, limit: '2mb' }));
 

@@ -18,6 +18,10 @@ export const config = {
   port: Number(process.env.PORT || 3001),
   appMode: (process.env.APP_MODE || 'demo') as 'demo' | 'production',
   sendMode: process.env.SEND_MODE || 'disabled',
+  basicAuth: {
+    user: (process.env.BASIC_AUTH_USER || '').trim(),
+    password: process.env.BASIC_AUTH_PASSWORD || '',
+  },
   dbPath: path.resolve(root, process.env.DB_PATH || 'data/db.json'),
   dataDir: path.resolve(root, 'data'),
   llm: {
