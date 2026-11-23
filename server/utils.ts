@@ -1,15 +1,20 @@
-import { createHash, randomUUID } from 'node:crypto';
+import { sha256 } from '@noble/hashes/sha2.js';
+import { bytesToHex, utf8ToBytes } from '@noble/hashes/utils.js';
 
 export function nowIso(): string {
   return new Date().toISOString();
 }
 
 export function makeId(prefix: string): string {
-  return `${prefix}_${randomUUID().slice(0, 8)}`;
+  return `${prefix}_${globalThis.crypto.randomUUID().slice(0, 8)}`;
 }
 
 export function hashText(value: string): string {
-  return createHash('sha256').update(value).digest('hex');
+  return bytesToHex(sha256(utf8ToBytes(value)));
+}
+
+export function hashBytes(value: Uint8Array): string {
+  return bytesToHex(sha256(value));
 }
 
 export function round2(value: number): number {

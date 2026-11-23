@@ -24,7 +24,7 @@ describe('DeepSeek server-side request contract', () => {
     ));
     vi.stubGlobal('fetch', fetchMock);
 
-    await expect(callDeepSeekJson('Extract this RFQ')).resolves.toEqual({ lines: [] });
+    await expect(callDeepSeekJson('Extract this RFQ', config.llm)).resolves.toEqual({ lines: [] });
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
     const [url, init] = fetchMock.mock.calls[0];

@@ -1,6 +1,40 @@
-import { config, hasLlmKey } from '../config.js';
+export interface LlmConfig {
+  baseUrl: string;
+  apiKey: string;
+  model: string;
+  timeoutMs: number;
+  maxRetries: number;
+}
 
-export { hasLlmKey };
+const DEFAULT_LLM_CONFIG: LlmConfig = {
+  baseUrl: 'https://api.deepseek.com',
+  apiKey: '',
+  model: 'deepseek-chat',
+  timeoutMs: 45_000,
+  maxRetries: 1,
+};
+
+export function llmConfigFromEnv(
+  env: Record<string, string | undefined>,
+): LlmConfig {
+  return {
+    baseUrl: (env.DEEPSEEK_BASE_URL || env.LLM_BASE_URL || DEFAULT_LLM_CONFIG.baseUrl).replace(/\/$/, ''),
+    apiKey: env.DEEPSEEK_API_KEY || env.LLM_API_KEY || '',
+    model: env.DEEPSEEK_MODEL || env.LLM_MODEL || DEFAULT_LLM_CONFIG.model,
+    timeoutMs: positiveNumber(
+      env.DEEPSEEK_TIMEOUT_MS || env.LLM_TIMEOUT_MS,
+      DEFAULT_LLM_CONFIG.timeoutMs,
+    ),
+    maxRetries: nonNegativeInteger(
+      env.DEEPSEEK_MAX_RETRIES || env.LLM_MAX_RETRIES,
+      DEFAULT_LLM_CONFIG.maxRetries,
+    ),
+  };
+}
+
+export function hasLlmKey(config?: LlmConfig): boolean {
+  return Boolean(config?.apiKey.trim());
+}
 
 interface ChatCompletionResponse {
   choices?: Array<{
@@ -23,17 +57,17 @@ class LlmRequestError extends Error {
   }
 }
 
-export async function callDeepSeekJson(prompt: string): Promise<unknown> {
-  if (!hasLlmKey()) {
+export async function callDeepSeekJson(prompt: string, llm: LlmConfig): Promise<unknown> {
+  if (!hasLlmKey(llm)) {
     throw new Error('DEEPSEEK_API_KEY 未配置，无法调用 DeepSeek。');
   }
 
   let lastError: Error | null = null;
-  const attempts = Math.max(0, config.llm.maxRetries) + 1;
+  const attempts = Math.max(0, llm.maxRetries) + 1;
 
   for (let attempt = 0; attempt < attempts; attempt += 1) {
     try {
-      const content = await requestCompletion(prompt);
+      const content = await requestCompletion(prompt, llm);
       return parseJsonContent(content);
     } catch (error) {
       lastError = error instanceof Error ? error : new Error(String(error));
@@ -46,19 +80,19 @@ export async function callDeepSeekJson(prompt: string): Promise<unknown> {
   throw new Error(`DeepSeek 调用失败：${lastError?.message ?? '未知错误'}`);
 }
 
-async function requestCompletion(prompt: string): Promise<string> {
+async function requestCompletion(prompt: string, llm: LlmConfig): Promise<string> {
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), config.llm.timeoutMs);
+  const timeout = setTimeout(() => controller.abort(), llm.timeoutMs);
 
   try {
-    const response = await fetch(`${config.llm.baseUrl}/chat/completions`, {
+    const response = await fetch(`${llm.baseUrl}/chat/completions`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${config.llm.apiKey}`,
+        Authorization: `Bearer ${llm.apiKey}`,
       },
       body: JSON.stringify({
-        model: config.llm.model,
+        model: llm.model,
         temperature: 0.1,
         stream: false,
         response_format: { type: 'json_object' },
@@ -88,7 +122,7 @@ async function requestCompletion(prompt: string): Promise<string> {
   } catch (error) {
     if (error instanceof LlmRequestError) throw error;
     if (error instanceof Error && error.name === 'AbortError') {
-      throw new LlmRequestError(`请求超时（${config.llm.timeoutMs}ms）`, true);
+      throw new LlmRequestError(`请求超时（${llm.timeoutMs}ms）`, true);
     }
     throw new LlmRequestError(`网络请求失败：${error instanceof Error ? error.message : String(error)}`, true);
   } finally {
@@ -129,4 +163,14 @@ function redact(value: string): string {
 
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function positiveNumber(value: string | undefined, fallback: number): number {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+}
+
+function nonNegativeInteger(value: string | undefined, fallback: number): number {
+  const parsed = Number(value);
+  return Number.isInteger(parsed) && parsed >= 0 ? parsed : fallback;
 }

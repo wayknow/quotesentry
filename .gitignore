@@ -7,6 +7,10 @@ data/exports/
 *.log
 .DS_Store
 .claude/
+.dev.vars
+.dev.vars.*
+!.dev.vars.example
+.wrangler/
 
 # Internal planning documents (keep local only)
 Agent大赛项目选型调研报告.md

@@ -240,7 +240,7 @@ export default function App() {
       <div className="boot-screen error">
         <div>
           <div className="boot-title">无法连接 QuoteSentry API</div>
-          <div className="boot-note">请确认服务端已在 3001 端口启动，然后刷新页面。</div>
+          <div className="boot-note">请确认 QuoteSentry API 已启动或部署，然后刷新页面。</div>
           <button className="btn primary" onClick={() => void loadInitial()}>重新连接</button>
         </div>
       </div>

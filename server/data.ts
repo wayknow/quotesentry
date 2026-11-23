@@ -1,6 +1,5 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { createHash } from 'node:crypto';
 import {
   catalogSkuSchema,
   customerSchema,
@@ -12,6 +11,7 @@ import {
   type SampleManifest,
 } from '../shared/schema.js';
 import { config } from './config.js';
+import { hashText } from './utils.js';
 
 function readJson(file: string): unknown {
   return JSON.parse(fs.readFileSync(file, 'utf8'));
@@ -42,7 +42,7 @@ export function readSampleText(file: string): string {
 }
 
 export function catalogRevision(catalog: CatalogSku[]): string {
-  return createHash('sha256').update(JSON.stringify(catalog)).digest('hex').slice(0, 12);
+  return hashText(JSON.stringify(catalog)).slice(0, 12);
 }
 
 export const dataCache = {

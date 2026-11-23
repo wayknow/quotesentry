@@ -12,6 +12,7 @@ import type {
 import { addDaysIso, hashText, makeId, nowIso, round2 } from '../utils.js';
 import { extractLines, type ExtractedLine, type ExtractionResult } from './extraction.js';
 import { evaluateGate, FIELD_LABELS } from './gate.js';
+import type { LlmConfig } from '../llm/client.js';
 import { matchCatalog } from './matcher.js';
 import { calculateQuoteTotals, isBelowMarginFloor, priceCatalogLine } from './pricing.js';
 
@@ -19,10 +20,11 @@ export interface AnalysisDependencies {
   customer: Customer;
   catalog: CatalogSku[];
   rules: PricingRules;
+  llm?: LlmConfig;
 }
 
 export async function analyzeDocument(doc: RfqDocument, deps: AnalysisDependencies): Promise<RfqDocument> {
-  const extraction = await extractLines(doc.rawText, doc.sourceType);
+  const extraction = await extractLines(doc.rawText, doc.sourceType, deps.llm);
   return applyExtraction(doc, extraction, deps);
 }
 

@@ -7,7 +7,7 @@ if (!hasLlmKey()) {
 } else {
   const startedAt = Date.now();
   try {
-    const result = await callDeepSeekJson('Return exactly one JSON object: {"ok":true}');
+    const result = await callDeepSeekJson('Return exactly one JSON object: {"ok":true}', config.llm);
     if (!result || typeof result !== 'object' || (result as { ok?: unknown }).ok !== true) {
       throw new Error(`DeepSeek 返回了非预期内容：${JSON.stringify(result)}`);
     }

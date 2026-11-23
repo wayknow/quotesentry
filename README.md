@@ -6,16 +6,19 @@
 
 MVP 已可运行：33 个仿真 SKU、9 份仿真询价、邮件文本 + Excel/CSV 输入、逐行证据、目录硬匹配、确定性计价、人工审批、毛利 override、CSV/PDF 导出和审计时间线。
 
+正式部署形态为 **Cloudflare Worker + D1 + R2**，与现有 `app_survey` 一致：Worker 负责 API 与 DeepSeek 调用，D1 保存询价/报价/审批/审计，R2 保存上传原文和客户导出。Express + 本地 JSON 保留为离线开发回退。
+
 ```bash
 npm install
 npm run dev
 ```
 
 - 前端：`http://127.0.0.1:5173`
-- API：`http://127.0.0.1:3001`
-- 生产构建：`npm run build && npm start`，访问 `http://127.0.0.1:3001`
+- Worker API：`npm run db:migrate:local && npm run dev:worker`，访问 `http://127.0.0.1:8787/api/health`
+- Express 回退：`npm run dev`（前端 `5173`，API `3001`）
+- 生产前端：`npm run build:wayknow`，写入 `../wayknow/quotesentry/`
 
-DeepSeek 默认走 OpenAI 兼容接口。复制 `.env.example` 为 `.env`，填入 `DEEPSEEK_API_KEY` 后重启服务端即可；Key 只由 Express 服务端读取，不进入浏览器。未配置 Key 时界面明确显示“规则模式”，不会冒充 AI。配置后可运行 `npm run test:deepseek` 做一次真实连通性 smoke test。
+DeepSeek 默认走 OpenAI 兼容接口。Worker 本地开发复制 `.dev.vars.example` 为 `.dev.vars`，线上用 `npx wrangler secret put DEEPSEEK_API_KEY`；Key 只由服务端读取，不进入浏览器。未配置 Key 时界面明确显示“规则模式”，不会冒充 AI。Express smoke 可运行 `npm run test:deepseek`。
 
 预发/公开演示可同时配置 `BASIC_AUTH_USER` 与 `BASIC_AUTH_PASSWORD` 开启可选 HTTP Basic Auth；本地默认关闭。
 
@@ -45,29 +48,35 @@ QuoteSentry 读取邮件文本和 Excel 询价，逐行抽取规格并回指原�
 ## 技术栈
 
 - 前端：React 18 + Vite + TypeScript，桌面优先。
-- 后端：Express + TypeScript + Zod。
+- 后端：Cloudflare Worker + TypeScript + Zod；Express 仅作本地回退。
 - 模型：DeepSeek OpenAI 兼容接口；失败时降级规则抽取并显著标注。
-- 数据：本机 JSON 持久化，`POST /api/reset-demo` 可重置演示。
-- 文件：`xlsx` 解析 Excel，`pdf-lib` 生成客户 PDF。
+- 数据：D1 持久化询价与审计，R2 保存上传和导出；`POST /api/reset-demo` 可重置演示文档。
+- 文件：Worker 内用 `xlsx` 解析 Excel，`pdf-lib` 生成客户 PDF。
 
 ## 常用命令
 
 ```bash
-npm run dev       # 同时启动 Vite 和 Express
+npm run dev       # 同时启动 Vite 和 Express（离线回退）
+npm run dev:worker # 启动本地 Cloudflare Worker（D1/R2）
+npm run db:migrate:local # 初始化本地 D1
 npm run check     # TypeScript 类型检查
-npm test          # 36 个金标/领域测试
+npm test          # 41 个金标/领域/Worker 测试
 npm run test:deepseek  # 用真实 Key 直连 DeepSeek 做 smoke test
 npm run seed      # 校验 9 份仿真询价均可识别
 npm run build     # 生产构建
-npm start         # 运行生产构建 + API
+npm run build:wayknow # 构建到 wayknow/quotesentry
+npm run worker:deploy # 部署 Cloudflare Worker
+npm start         # Express 回退
 ```
 
 ## 目录
 
 ```text
 client/               React 工作台
-server/               API、领域规则、DeepSeek 网关、导出
+worker/               Cloudflare Worker、D1/R2 存储、Auth
+server/               Express 回退、领域规则、DeepSeek 网关、导出
 server/domain/        抽取、门禁、硬匹配、计价、审批、审计
+migrations/           D1 Schema
 shared/schema.ts      共享 Zod Schema 与类型
 data/catalog/         33 个仿真 SKU
 data/samples/         9 份仿真询价
@@ -94,7 +103,7 @@ tests/golden/         计价、门禁、匹配、流程、导出隔离测试
 - DeepSeek 服务端连通性、`seed-08` 真实 LLM 抽取、审批和导出已实测通过；仍需准备规则模式录屏兜底。
 - 不做 PDF 原文件解析、OCR、真实邮箱/ERP、多租户、登录权限。
 - 毛利为税前、未计出口退税的演示口径。
-- JSON 持久化与无鉴权 API 只适合本地演示，不适合直接暴露公网。
+- 线上 Worker 已实现 D1/R2 和可选 Basic Auth；正式账号、角色和多租户仍不在比赛版范围。
 
 ## 上游与许可
 

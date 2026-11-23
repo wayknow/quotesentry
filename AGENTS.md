@@ -8,8 +8,8 @@
 - **产品形态**：桌面优先的 B 端 Web 应用，浏览器访问，不做小程序、不做 Electron、不做原生 App。
 - **核心闭环**：读取邮件文本/Excel → 逐行抽取规格与证据 → 缺参/冲突/目录外阻断 → 目录硬过滤 → 确定性计价 → 人工审批 → CSV/PDF 导出 → 审计追溯。
 - **5 天版范围**：一个产品族、33 个仿真 SKU、9 份询价、两种输入、两个核心页面、正常与异常三条演示链路。
-- **技术栈（5 天版）**：React + Vite + TypeScript + Express + Zod；本地 JSON 持久化；模型走 DeepSeek OpenAI 兼容接口。
-- **当前状态**：MVP 主链路已实现并通过 36 个自动化测试；DeepSeek 服务端直连与 `seed-08` 真实 LLM 全链路已通过，wayknow 部署待配置。
+- **技术栈（5 天版）**：React + Vite + TypeScript + Cloudflare Worker + Zod；D1 持久化、R2 文件归档；模型走 DeepSeek OpenAI 兼容接口。Express + JSON 仅作离线回退。
+- **当前状态**：MVP 主链路已实现并通过 41 个自动化测试；Worker + D1 + R2 本地全链路、文本/XLSX 上传、审批、CSV/PDF 和发送阻断均已通过；远程部署待配置。
 
 ## 硬性约束
 
@@ -23,7 +23,7 @@
 - **证据必须可回指**：字段证据至少包含原文片段 + 页码/工作表/行号；找不到证据的字段视为未验证。
 - **规则模式必须标注**：模型不可用时，结构化 Excel/CSV 和邮件文本可以走确定性规则抽取，但界面必须明确显示“规则模式”，不得冒充 AI。
 - **客户文件隔离**：客户 PDF/CSV 不得包含成本、毛利、内部备注、异常置信度、审批人信息。
-- **不要修改 `work/wayknow`**：除非用户明确要求；本仓库的文档和代码先独立维护，部署阶段再按 `deploy.md` 接入。
+- **不要修改 `work/wayknow` 的其他内容**：用户已授权维护 `work/wayknow/quotesentry/` 静态产物和对应部署文档；不要改站点导航、其他产品页或生产服务器，除非再次明确要求。
 - **不要提交或推送**：除非用户明确要求。
 - **保留上游许可**：使用或复制 MIT 代码时必须保留原 LICENSE、版权声明，并新增 `NOTICE` 与 `docs/UPSTREAM.md`。
 
@@ -39,9 +39,11 @@ ai_agent_demo/
 ├── decisions.md               # 关键决策与原因
 ├── deploy.md                  # 本地运行与 wayknow 子目录部署
 ├── client/                    # React + Vite 前端
-├── server/                    # Express API
+├── server/                    # Express 回退 + 可复用领域层
 │   ├── domain/                # 抽取、门禁、匹配、计价、审批、审计
 │   └── llm/                   # DeepSeek OpenAI 兼容网关
+├── worker/                    # Cloudflare Worker、D1/R2、Worker Auth
+├── migrations/                # D1 Schema
 ├── shared/                    # 共享类型与 Schema
 ├── data/
 │   ├── catalog/               # 仿真 SKU
@@ -55,10 +57,10 @@ ai_agent_demo/
 ## 技术约定
 
 - **前端**：React + Vite + TypeScript；本项目使用自有 CSS 组件，不复制上游 UI 代码。
-- **后端**：Express + TypeScript；路由、状态、审批、审计集中在服务端。
+- **后端**：Cloudflare Worker + TypeScript；路由、状态、审批、审计集中在服务端。Express 仅作离线回退。
 - **校验**：Zod 校验所有请求、模型输出和导出对象；模型输出先校验，再落库或渲染。
 - **计价**：使用整数最小货币单位或 decimal 库；禁止直接使用浮点结果作为正式金额。
-- **持久化**：5 天版使用单文件 JSON；仓库层保持可替换，不引入 ORM 或第二套数据库。
+- **持久化**：生产使用 D1；R2 保存上传原文与客户导出。Express 本地回退使用单文件 JSON。
 - **模型**：默认 DeepSeek OpenAI 兼容接口；密钥只在服务端读取，失败时显著降级规则模式。
 - **UI 风格**：企业工具风格，浅色/中性色背景，表格与分栏优先；不要做聊天首页、营销大屏或夸张动画。
 - **语言**：内部文档中文；产品界面中文；客户报价可英文或中英混排。
@@ -111,6 +113,14 @@ npm run dev
 curl -s http://127.0.0.1:3001/api/health
 ```
 
+Worker 变更额外执行：
+
+```bash
+npm run db:migrate:local
+npm run worker:dry-run
+curl -s http://127.0.0.1:8787/api/health
+```
+
 另外检查：
 
 ```bash
@@ -131,9 +141,9 @@ rg -n 'localhost|127.0.0.1' client/src
 
 ## 部署
 
-- 本阶段只做本地桌面 Web 演示；未经用户明确要求，不执行部署。
-- 后续计划在 `work/wayknow` 的站点下以 `/quotesentry/` 子目录接入，API 走同源 `/quotesentry/api/` 或独立子域。
-- 子路径部署需要 Vite `base`、前端路由 `basename`、Nginx `location` 和 API 代理一起改，细节见 [deploy.md](deploy.md)。
+- 前端产物构建到 `work/wayknow/quotesentry/`；API 部署到 Cloudflare Worker，经 Nginx 暴露为 `/quotesentry/api/`。
+- 远程 Worker、D1、R2、secret 和 Nginx 配置均需用户明确要求后再执行，细节见 [deploy.md](deploy.md)。
+- 不要把 `.dev.vars`、DeepSeek Key、D1 状态或本地 R2 文件提交到任一仓库。
 
 ## 许可与上游
 

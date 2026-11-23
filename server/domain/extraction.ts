@@ -1,6 +1,5 @@
 import { llmExtractionSchema, type EngineMode, type LlmLine, type SourceType } from '../../shared/schema.js';
-import { callDeepSeekJson, hasLlmKey } from '../llm/client.js';
-import { config } from '../config.js';
+import { callDeepSeekJson, hasLlmKey, type LlmConfig } from '../llm/client.js';
 import { normalizeMaterial, normalizeProductType, normalizeStrength, normalizeSurface, normalizeUnit } from './normalization.js';
 import { normalizeStandard } from './standards.js';
 import { normalizeWhitespace } from '../utils.js';
@@ -32,7 +31,11 @@ export interface ExtractionResult {
 const CANDIDATE_HINTS = /(m\d+(?:\.\d+)?\s*[x×]\s*\d+|bolt|screw|nut|washer|same as last time|repeat order)/i;
 const IGNORE_HINTS = /^(subject|from|to|dear|hi|hello|please confirm|best regards|regards|thanks|thank you|one box|each box|one carton|each carton|packing)\b/i;
 
-export async function extractLines(rawText: string, sourceType: SourceType): Promise<ExtractionResult> {
+export async function extractLines(
+  rawText: string,
+  sourceType: SourceType,
+  llm?: LlmConfig,
+): Promise<ExtractionResult> {
   if (sourceType === 'csv' || sourceType === 'xlsx') {
     return {
       lines: extractCsvLines(rawText),
@@ -42,14 +45,14 @@ export async function extractLines(rawText: string, sourceType: SourceType): Pro
     };
   }
 
-  if (hasLlmKey()) {
+  if (hasLlmKey(llm)) {
     try {
-      const llm = await llmExtract(rawText);
+      const lines = await llmExtract(rawText, llm!);
       return {
-        lines: llm,
+        lines,
         engineMode: 'llm',
         engineNote: 'DeepSeek 实时抽取；模型只返回字段和原文片段，不返回价格。',
-        model: config.llm.model,
+        model: llm!.model,
       };
     } catch (error) {
       return {
@@ -185,7 +188,7 @@ export function ruleExtractLine(line: string, lineIndex: number, location: strin
   };
 }
 
-async function llmExtract(rawText: string): Promise<ExtractedLine[]> {
+async function llmExtract(rawText: string, llm: LlmConfig): Promise<ExtractedLine[]> {
   const prompt = `You extract fastener RFQ lines for QuoteSentry. Return ONLY JSON.
 
 For every product line in the inquiry, return:
@@ -219,7 +222,7 @@ Inquiry:
 ${rawText}
 >>>`;
 
-  const parsed = llmExtractionSchema.parse(await callDeepSeekJson(prompt));
+  const parsed = llmExtractionSchema.parse(await callDeepSeekJson(prompt, llm));
   return parsed.lines.map((line, index) => normalizeLlmLine(line, index + 1, rawText));
 }
 

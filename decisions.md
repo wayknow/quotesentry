@@ -127,3 +127,18 @@
 **Decision**：使用 `DEEPSEEK_API_KEY`、`DEEPSEEK_BASE_URL`、`DEEPSEEK_MODEL`，由 Express 服务端直接请求 `https://api.deepseek.com/chat/completions`；与现有 `app_survey` 的请求方式保持一致。
 **Why**：已有服务端已验证这条路可用，统一变量名和调用方式能减少部署时的配置分叉；Key 不进入浏览器也能避免泄露。
 **Impact**：保留旧 `LLM_*` 变量兼容；新增 `npm run test:deepseek` 用于配置真实 Key 后验证端点和鉴权。
+
+## 22. 正式部署迁移到 Cloudflare Worker + D1 + R2
+
+**Decision**：生产形态改为 `wayknow/quotesentry` 静态前端 + Cloudflare Worker API；询价/报价/审批/审计写入 D1，上传原文与客户导出写入 R2。Express + `data/db.json` 保留为本地回退。
+
+**Why**：用户要求沿用 `app_survey` 的部署方式；单台 Nginx 服务器不适合托管需要持久化和文件归档的 API。Worker 与现有 Cloudflare 基础设施一致，D1 省去数据库运维，R2 让原始询价和导出文件可追溯。
+
+**Impact**：
+
+- D1 `rfq_documents` 保存完整 `RfqDocument` JSON，避免过早拆表；`quote_artifacts` 记录 R2 key、大小和 SHA-256。
+- R2 key 固定为 `rfqs/<documentId>/source/*` 与 `rfqs/<documentId>/exports/*`。
+- Worker 复用 `server/domain/`，不复制计价、门禁、审批规则。
+- DeepSeek Key 改为 Worker secret；`.dev.vars` 只用于本地且禁止提交。
+- 前端通过 `/quotesentry/api` 同源访问，Nginx 反代到 Worker。
+- 远程部署、D1/R2 创建和 Nginx 变更仍需用户明确要求后执行。

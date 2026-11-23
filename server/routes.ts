@@ -6,7 +6,7 @@ import multer from 'multer';
 import * as XLSX from 'xlsx';
 import { z, ZodError } from 'zod';
 import type { BootstrapResponse, RfqDocument, SourceType } from '../shared/schema.js';
-import { config, hasLlmKey } from './config.js';
+import { config } from './config.js';
 import { catalogRev, dataCache } from './data.js';
 import { analyzeDocument } from './domain/analyze.js';
 import {
@@ -21,6 +21,7 @@ import { AppError } from './errors.js';
 import { customerQuoteCsv, customerQuotePdf } from './exporters.js';
 import { store } from './store.js';
 import { hashText, makeId, nowIso } from './utils.js';
+import { hasLlmKey } from './llm/client.js';
 
 export const api = Router();
 
@@ -93,6 +94,7 @@ api.post('/rfqs/:id/analyze', asyncRoute(async (req, res) => {
     customer,
     catalog: dataCache.catalog,
     rules: dataCache.pricingRules,
+    llm: config.llm,
   });
   res.json(store.upsertDocument(next));
 }));
@@ -164,13 +166,13 @@ function healthPayload() {
   return {
     status: 'ok' as const,
     mode: config.appMode,
-    engine: hasLlmKey() ? 'llm' as const : 'rules' as const,
-    engineLabel: hasLlmKey() ? 'DeepSeek 实时抽取' : '确定性规则模式',
+    engine: hasLlmKey(config.llm) ? 'llm' as const : 'rules' as const,
+    engineLabel: hasLlmKey(config.llm) ? 'DeepSeek 实时抽取' : '确定性规则模式',
     model: config.llm.model,
     catalogRevision: catalogRev,
     pricingRuleVersion: dataCache.pricingRules.version,
     sendMode: config.sendMode,
-    llmConfigured: hasLlmKey(),
+    llmConfigured: hasLlmKey(config.llm),
   };
 }
 
