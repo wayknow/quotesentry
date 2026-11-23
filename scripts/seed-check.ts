@@ -34,6 +34,7 @@ for (const [index, sample] of dataCache.samples.entries()) {
     lines: [],
     quotes: [],
     currentQuoteId: null,
+    agentTurns: [],
     audit: [],
   };
   const analyzed = applyExtraction(doc, {

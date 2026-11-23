@@ -9,6 +9,7 @@ import type { BootstrapResponse, RfqDocument, SourceType } from '../shared/schem
 import { config } from './config.js';
 import { catalogRev, dataCache } from './data.js';
 import { analyzeDocument } from './domain/analyze.js';
+import { handleAgentTurn } from './domain/conversation.js';
 import {
   approveQuote,
   assertSendAllowed,
@@ -37,6 +38,10 @@ const createTextSchema = z.object({
 });
 
 const analyzeSchema = z.object({}).passthrough().optional();
+const chatSchema = z.object({
+  message: z.string().trim().min(1).max(2000),
+  actor: z.string().trim().min(1).max(80).optional(),
+});
 const actorSchema = z.object({ actor: z.string().trim().min(1).max(80) });
 const overrideSchema = actorSchema.extend({
   lineId: z.string().trim().min(1),
@@ -95,6 +100,19 @@ api.post('/rfqs/:id/analyze', asyncRoute(async (req, res) => {
     catalog: dataCache.catalog,
     rules: dataCache.pricingRules,
     llm: config.llm,
+  });
+  res.json(store.upsertDocument(next));
+}));
+
+api.post('/rfqs/:id/chat', asyncRoute(async (req, res) => {
+  const input = chatSchema.parse(req.body);
+  const doc = mustGetDocument(req.params.id);
+  const next = await handleAgentTurn(doc, input.message, {
+    customer: mustGetCustomer(doc.customerId),
+    catalog: dataCache.catalog,
+    rules: dataCache.pricingRules,
+    llm: config.llm,
+    actor: input.actor,
   });
   res.json(store.upsertDocument(next));
 }));
@@ -228,6 +246,7 @@ async function createDocument(req: Request): Promise<RfqDocument> {
     lines: [],
     quotes: [],
     currentQuoteId: null,
+    agentTurns: [],
     audit: [{
       id: makeId('aud'),
       at: now,

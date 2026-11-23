@@ -1,6 +1,6 @@
 # Deployment Guide
 
-> 当前状态：前端与 Worker + D1 已上线；R2 未开通，文件默认归档在 D1；DeepSeek 线上 Key 已配置，实时抽取已完成线上验收。
+> 当前状态：前端与 Worker + D1 已上线；R2 未开通，文件默认归档在 D1；DeepSeek 线上 Key 已配置，实时抽取与三轮对话审单均已完成线上验收。
 
 ## 1. 当前线上形态
 
@@ -110,6 +110,8 @@ DEEPSEEK_MAX_RETRIES=1
 
 线上已验证 `seed-08`：`PRICED / NEEDS_CLARIFICATION / NO_MATCH`，证据 26/26，客户金额 USD 465.00。Key 不进入前端、D1、日志或导出文件。
 
+`deepseek-chat` 是模型别名，不是代码里写死的 `deepseek-v3` 或 `deepseek-v4-flash`。实际后端版本由 DeepSeek 服务端对该别名的映射决定；如需固定版本，先确认服务商当前可用模型名，再修改 `DEEPSEEK_MODEL`，不要把未经确认的版本号写进参赛材料。
+
 ## 7. 可选 Basic Auth
 
 ```bash
@@ -131,7 +133,7 @@ API 已通过 Cloudflare Route 在 CDN 层接管 `wayknow.tech/quotesentry/api/*
 ## 9. 验收清单
 
 - [x] `npm run check` 通过。
-- [x] `npm test`：8 files / 41 tests 通过。
+- [x] `npm test`：9 files / 46 tests 通过。
 - [x] `npm run worker:dry-run` 通过。
 - [x] 线上静态页 `/quotesentry/` 返回 200。
 - [x] 线上 `/quotesentry/api/health` 返回 200，`storage=d1`。
@@ -142,6 +144,9 @@ API 已通过 Cloudflare Route 在 CDN 层接管 `wayknow.tech/quotesentry/api/*
 - [x] 线上 `POST /send` 返回 403 `SEND_DISABLED`。
 - [x] 线上文本上传写入 D1，`quote_artifacts.storage_backend=d1`。
 - [x] 配置 DeepSeek Key 后复测实时 LLM 抽取：`engine=llm`、`seed-08` 三行状态与 USD 465.00 均正确。
+- [x] 线上三轮对话：首轮结构化结果、补充第二行镀锌后重算为两行可报价、解释第三行 `NO_MATCH`。
+- [x] 对话请求不会自动审批或导出：报价保持 `READY_FOR_APPROVAL`，审计无 `APPROVED` / `EXPORTED`。
+- [x] 对话动作按钮可跳转报价审批页；验收后已执行 `reset-demo` 恢复干净样例。
 
 ## 10. 已知风险
 

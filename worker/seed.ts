@@ -24,6 +24,7 @@ function seedDocument(sample: SampleManifest, index: number, createdAt: string):
     lines: [],
     quotes: [],
     currentQuoteId: null,
+    agentTurns: [],
     audit: [{
       id: makeId('aud'),
       at: createdAt,
@@ -39,4 +40,3 @@ function seedDocument(sample: SampleManifest, index: number, createdAt: string):
     }],
   };
 }
-

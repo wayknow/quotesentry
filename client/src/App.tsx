@@ -1,7 +1,9 @@
-import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from 'react';
+import { useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode } from 'react';
 import type {
   AuditEvent,
   BootstrapResponse,
+  ChatPayload,
+  ChatTurn,
   Customer,
   RfqDocument,
   RfqLine,
@@ -9,6 +11,7 @@ import type {
 import {
   analyzeRfq,
   approveRfq,
+  chatRfq,
   createTextRfq,
   downloadExport,
   getBootstrap,
@@ -31,7 +34,7 @@ import {
   surfaceLabel,
 } from './ui.js';
 
-type Tab = 'review' | 'approval' | 'audit' | 'catalog';
+type Tab = 'chat' | 'review' | 'approval' | 'audit' | 'catalog';
 type Notice = { kind: 'success' | 'error' | 'info'; message: string } | null;
 type CatalogItem = BootstrapResponse['catalog'][number];
 
@@ -53,7 +56,7 @@ const AUDIT_LABEL: Record<string, string> = {
 
 function tabFromUrl(): Tab {
   const value = new URLSearchParams(window.location.search).get('tab');
-  return value === 'approval' || value === 'audit' || value === 'catalog' ? value : 'review';
+  return value === 'chat' || value === 'approval' || value === 'audit' || value === 'catalog' ? value : 'review';
 }
 
 function documentIdFromUrl(): string | null {
@@ -129,6 +132,25 @@ export default function App() {
       setNotice({ kind: 'success', message: `审单完成：${next.lines.length} 行已处理。` });
     } catch (error) {
       showError(error);
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  async function handleChat(message: string) {
+    if (!selectedDoc) return;
+    setBusy('chat');
+    try {
+      const next = await chatRfq(
+        selectedDoc.id,
+        message,
+        '销售 / Sales',
+      );
+      await refresh(next.id);
+      setTab('chat');
+    } catch (error) {
+      showError(error);
+      throw error;
     } finally {
       setBusy(null);
     }
@@ -281,6 +303,16 @@ export default function App() {
             </div>
 
             <div className="content-scroll">
+              {tab === 'chat' && (
+                <ChatTab
+                  doc={selectedDoc}
+                  busy={busy}
+                  onSend={handleChat}
+                  onOpenReview={() => setTab('review')}
+                  onOpenApproval={() => setTab('approval')}
+                  onDownload={(format) => void handleExport(format)}
+                />
+              )}
               {tab === 'review' && (
                 <ReviewTab doc={selectedDoc} busy={busy === 'analyze'} onAnalyze={() => void handleAnalyze()} />
               )}
@@ -495,6 +527,7 @@ function TabBar(props: {
   const quote = props.doc.quotes.find((item) => item.id === props.doc.currentQuoteId);
   const tabs: Array<{ id: Tab; label: string; meta?: string }> = [
     { id: 'review', label: '审单工作台', meta: props.doc.lines.length ? String(props.doc.lines.length) : undefined },
+    { id: 'chat', label: '对话审单', meta: props.doc.agentTurns.length ? String(props.doc.agentTurns.length) : undefined },
     { id: 'approval', label: '报价审批', meta: quote ? QUOTE_STATUS_LABEL[quote.status] : undefined },
     { id: 'audit', label: '审计时间线', meta: String(props.doc.audit.length) },
     { id: 'catalog', label: '商品目录', meta: String(props.catalogCount) },
@@ -512,6 +545,230 @@ function TabBar(props: {
         </button>
       ))}
     </nav>
+  );
+}
+
+const CHAT_PROMPTS = [
+  '审单，并告诉我哪些行不能报价',
+  '第二行表面处理是镀锌',
+  '为什么第三行不能报价',
+  '审批并导出 CSV',
+];
+
+function ChatTab(props: {
+  doc: RfqDocument;
+  busy: string | null;
+  onSend: (message: string) => Promise<void>;
+  onOpenReview: () => void;
+  onOpenApproval: () => void;
+  onDownload: (format: 'csv' | 'pdf') => void;
+}) {
+  const [draft, setDraft] = useState('');
+  const endRef = useRef<HTMLDivElement | null>(null);
+  const turns: ChatTurn[] = props.doc.agentTurns ?? [];
+  const chatBusy = props.busy === 'chat';
+
+  useEffect(() => {
+    endRef.current?.scrollIntoView({ block: 'nearest' });
+  }, [turns.length, chatBusy]);
+
+  async function send(message: string) {
+    const text = message.trim();
+    if (!text || chatBusy) return;
+    setDraft('');
+    try {
+      await props.onSend(text);
+    } catch {
+      setDraft(text);
+    }
+  }
+
+  function submit(event: FormEvent) {
+    event.preventDefault();
+    void send(draft);
+  }
+
+  return (
+    <div className="chat-wrap">
+      <section className="chat-panel">
+        <div className="chat-heading">
+          <div>
+            <div className="eyebrow">AGENT CONVERSATION · 3 ROUNDS</div>
+            <h2>对话补规格，按钮做承诺</h2>
+            <p>Agent 负责理解、追问和解释；SKU、价格、毛利由目录与规则计算，审批和导出必须由人点击确认。</p>
+          </div>
+          <span className={`engine-pill ${props.doc.engineMode}`}>
+            <span className={`pulse ${props.doc.engineMode}`} />
+            {props.doc.engineMode === 'llm' ? 'DeepSeek 抽取' : '规则模式'}
+          </span>
+        </div>
+
+        {turns.length === 0 ? (
+          <div className="chat-intro">
+            <div className="chat-intro-mark">QS</div>
+            <div>
+              <h3>从一封三行询价开始</h3>
+              <p>第一轮审单会识别可报价、待澄清和目录外行；后续可以直接补充行号与规格。对话不会自动审批、导出或外发。</p>
+            </div>
+            <div className="chat-prompts">
+              {CHAT_PROMPTS.map((prompt) => (
+                <button key={prompt} onClick={() => void send(prompt)} disabled={chatBusy}>
+                  <span>↗</span>
+                  {prompt}
+                </button>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <div className="chat-thread" aria-live="polite">
+            {turns.map((turn) => (
+              <div className={`chat-row ${turn.role}`} key={turn.id}>
+                {turn.role === 'assistant' && <div className="chat-avatar">QS</div>}
+                <div className="chat-bubble">
+                  <div className="chat-meta">
+                    <strong>{turn.role === 'user' ? '销售' : 'QuoteSentry Agent'}</strong>
+                    <span>{formatDate(turn.at)}</span>
+                  </div>
+                  <p className="chat-text">{turn.text}</p>
+                  {turn.payload && (
+                    <ChatPayloadCard
+                      payload={turn.payload}
+                      busy={Boolean(props.busy)}
+                      onOpenReview={props.onOpenReview}
+                      onOpenApproval={props.onOpenApproval}
+                      onDownload={props.onDownload}
+                    />
+                  )}
+                </div>
+              </div>
+            ))}
+            {chatBusy && (
+              <div className="chat-row assistant">
+                <div className="chat-avatar">QS</div>
+                <div className="chat-bubble pending">
+                  <span className="spinner" />
+                  正在调用模型抽取并重新审单…
+                </div>
+              </div>
+            )}
+            <div ref={endRef} />
+          </div>
+        )}
+
+        <form className="chat-composer" onSubmit={submit}>
+          <textarea
+            value={draft}
+            onChange={(event) => setDraft(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter' && !event.shiftKey && !event.nativeEvent.isComposing) {
+                event.preventDefault();
+                void send(draft);
+              }
+            }}
+            placeholder="例如：第二行表面处理是镀锌；或：为什么第三行不能报价"
+            rows={2}
+            disabled={chatBusy}
+            aria-label="对话输入"
+          />
+          <button className="btn primary" type="submit" disabled={chatBusy || !draft.trim()}>
+            {chatBusy ? <span className="spinner light" /> : null}
+            {chatBusy ? '审单中…' : '发送'}
+          </button>
+        </form>
+        <div className="chat-footnote">
+          <span>Enter 发送 · Shift + Enter 换行</span>
+          <span>客户外发仍为禁用；所有人工补充会写入审计证据。</span>
+        </div>
+      </section>
+
+      <aside className="chat-guardrails">
+        <div className="panel-kicker">CONTROL BOUNDARY</div>
+        <h3>四层分工</h3>
+        <div className="guardrail-item">
+          <span>01</span>
+          <div><strong>对话负责表达</strong><p>理解补充字段，解释为什么某行不能报价。</p></div>
+        </div>
+        <div className="guardrail-item">
+          <span>02</span>
+          <div><strong>规则负责计算</strong><p>目录匹配、确定性计价、毛利门禁不交给模型。</p></div>
+        </div>
+        <div className="guardrail-item">
+          <span>03</span>
+          <div><strong>按钮负责承诺</strong><p>审批、override、CSV/PDF 导出都需要明确点击。</p></div>
+        </div>
+        <div className="guardrail-item">
+          <span>04</span>
+          <div><strong>人负责最终确认</strong><p>模型不可用时显示规则模式，不冒充 AI 或自动外发。</p></div>
+        </div>
+      </aside>
+    </div>
+  );
+}
+
+function ChatPayloadCard(props: {
+  payload: ChatPayload;
+  busy: boolean;
+  onOpenReview: () => void;
+  onOpenApproval: () => void;
+  onDownload: (format: 'csv' | 'pdf') => void;
+}) {
+  const payload = props.payload;
+  return (
+    <div className={`chat-payload ${payload.kind}`}>
+      <div className="chat-payload-head">
+        <strong>{payload.title}</strong>
+        <span>{payload.kind.toUpperCase()}</span>
+      </div>
+      <p>{payload.summary}</p>
+
+      {payload.quote && (
+        <div className="chat-quote-strip">
+          <span>{QUOTE_STATUS_LABEL[payload.quote.status]}</span>
+          <strong>{formatUsd(payload.quote.totalUsd)}</strong>
+          <span>毛利 {payload.quote.marginPct.toFixed(1)}%</span>
+        </div>
+      )}
+
+      {payload.lines.length > 0 && (
+        <div className="chat-lines">
+          {payload.lines.map((line) => (
+            <div className="chat-line" key={line.lineIndex}>
+              <div className="chat-line-top">
+                <strong>ROW {String(line.lineIndex).padStart(2, '0')}</strong>
+                <span className={`mini-status ${statusTone(line.status)}`}>{LINE_STATUS_LABEL[line.status]}</span>
+                <span className="chat-line-sku">{line.sku ?? '无硬匹配'}</span>
+                <span className="chat-line-amount">{line.amountUsd === null ? '—' : formatUsd(line.amountUsd)}</span>
+              </div>
+              {line.missingFields.length > 0 && (
+                <div className="chat-line-missing">缺少：{line.missingFields.map((field) => FIELD_LABEL[field] ?? field).join('、')}</div>
+              )}
+              {line.question && <div className="chat-line-question">{line.question}</div>}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {payload.question && <div className="chat-question">{payload.question}</div>}
+
+      {payload.actions.length > 0 && (
+        <div className="chat-actions">
+          {payload.actions.map((action) => (
+            <button
+              key={`${action.kind}-${action.label}-${action.format ?? ''}`}
+              className="btn secondary"
+              disabled={props.busy}
+              onClick={() => {
+                if (action.kind === 'open_review') props.onOpenReview();
+                else if (action.kind === 'approve') props.onOpenApproval();
+                else if (action.kind === 'download' && action.format) props.onDownload(action.format);
+              }}
+            >
+              {action.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
 

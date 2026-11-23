@@ -23,6 +23,13 @@ export async function analyzeRfq(id: string): Promise<RfqDocument> {
   return request<RfqDocument>(`/rfqs/${encodeURIComponent(id)}/analyze`, { method: 'POST' });
 }
 
+export async function chatRfq(id: string, message: string, actor?: string): Promise<RfqDocument> {
+  return request<RfqDocument>(`/rfqs/${encodeURIComponent(id)}/chat`, {
+    method: 'POST',
+    body: JSON.stringify({ message, actor }),
+  });
+}
+
 export async function approveRfq(id: string, actor: string): Promise<RfqDocument> {
   return request<RfqDocument>(`/rfqs/${encodeURIComponent(id)}/approve`, {
     method: 'POST',

@@ -32,6 +32,50 @@ export type DocumentStatus = (typeof DOCUMENT_STATUSES)[number];
 export const QUOTE_STATUSES = ['DRAFT', 'READY_FOR_APPROVAL', 'APPROVED', 'EXPORTED'] as const;
 export type QuoteStatus = (typeof QUOTE_STATUSES)[number];
 
+export const CHAT_ROLES = ['user', 'assistant'] as const;
+export type ChatRole = (typeof CHAT_ROLES)[number];
+
+export const chatActionSchema = z.object({
+  kind: z.enum(['approve', 'download', 'open_review']),
+  label: z.string(),
+  format: z.enum(['csv', 'pdf']).optional(),
+});
+export type ChatAction = z.infer<typeof chatActionSchema>;
+
+export const chatLineSummarySchema = z.object({
+  lineIndex: z.number().int().nonnegative(),
+  status: z.enum(LINE_STATUSES),
+  sku: z.string().nullable(),
+  amountUsd: z.number().nullable(),
+  missingFields: z.array(z.string()),
+  question: z.string().nullable(),
+});
+export type ChatLineSummary = z.infer<typeof chatLineSummarySchema>;
+
+export const chatPayloadSchema = z.object({
+  kind: z.enum(['analysis', 'clarification', 'updated', 'approved', 'blocked', 'explanation', 'summary']),
+  title: z.string(),
+  summary: z.string(),
+  question: z.string().nullable().default(null),
+  lines: z.array(chatLineSummarySchema).default([]),
+  quote: z.object({
+    status: z.enum(QUOTE_STATUSES),
+    totalUsd: z.number(),
+    marginPct: z.number(),
+  }).nullable().default(null),
+  actions: z.array(chatActionSchema).default([]),
+});
+export type ChatPayload = z.infer<typeof chatPayloadSchema>;
+
+export const chatTurnSchema = z.object({
+  id: z.string(),
+  role: z.enum(CHAT_ROLES),
+  at: z.string(),
+  text: z.string(),
+  payload: chatPayloadSchema.nullable().default(null),
+});
+export type ChatTurn = z.infer<typeof chatTurnSchema>;
+
 export const evidenceSchema = z.object({
   text: z.string(),
   location: z.string(),
@@ -203,6 +247,7 @@ export const rfqDocumentSchema = z.object({
   lines: z.array(rfqLineSchema),
   quotes: z.array(quoteSchema),
   currentQuoteId: z.string().nullable(),
+  agentTurns: z.array(chatTurnSchema).default([]),
   audit: z.array(auditEventSchema),
 });
 export type RfqDocument = z.infer<typeof rfqDocumentSchema>;

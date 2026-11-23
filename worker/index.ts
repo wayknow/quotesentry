@@ -2,6 +2,7 @@ import * as XLSX from 'xlsx';
 import { z } from 'zod';
 import type { BootstrapResponse, RfqDocument, SourceType } from '../shared/schema.js';
 import { analyzeDocument } from '../server/domain/analyze.js';
+import { handleAgentTurn } from '../server/domain/conversation.js';
 import {
   approveQuote,
   assertSendAllowed,
@@ -31,6 +32,10 @@ const createTextSchema = z.object({
 });
 
 const actorSchema = z.object({ actor: z.string().trim().min(1).max(80) });
+const chatSchema = z.object({
+  message: z.string().trim().min(1).max(2000),
+  actor: z.string().trim().min(1).max(80).optional(),
+});
 const overrideSchema = actorSchema.extend({
   lineId: z.string().trim().min(1),
   reason: z.string().trim().min(5).max(500),
@@ -108,7 +113,7 @@ async function route(
     return json({ documents, health: healthPayload(env) });
   }
 
-  const match = path.match(/^\/api\/rfqs\/([^/]+)(?:\/(analyze|approve|override|send|export\.csv|export\.pdf))?$/);
+  const match = path.match(/^\/api\/rfqs\/([^/]+)(?:\/(analyze|chat|approve|override|send|export\.csv|export\.pdf))?$/);
   if (!match) return json({ error: 'API route not found', code: 'NOT_FOUND' }, 404);
 
   const id = decodeURIComponent(match[1]);
@@ -128,6 +133,19 @@ async function route(
       catalog: dataCache.catalog,
       rules: dataCache.pricingRules,
       llm: llmForEnv(env),
+    });
+    return json(await store.upsertDocument(next));
+  }
+
+  if (action === 'chat' && request.method === 'POST') {
+    const parsed = chatSchema.parse(await readJsonObject(request));
+    const document = await mustGetDocument(store, id);
+    const next = await handleAgentTurn(document, parsed.message, {
+      customer: mustGetCustomer(document.customerId),
+      catalog: dataCache.catalog,
+      rules: dataCache.pricingRules,
+      llm: llmForEnv(env),
+      actor: parsed.actor,
     });
     return json(await store.upsertDocument(next));
   }
@@ -231,6 +249,7 @@ async function createDocument(
     lines: [],
     quotes: [],
     currentQuoteId: null,
+    agentTurns: [],
     audit: [{
       id: makeId('aud'),
       at: now,

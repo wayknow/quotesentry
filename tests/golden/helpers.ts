@@ -38,6 +38,7 @@ export function emptyDocument(customerId: string, rawText: string, sourceType: R
     lines: [],
     quotes: [],
     currentQuoteId: null,
+    agentTurns: [],
     audit: [],
   };
 }

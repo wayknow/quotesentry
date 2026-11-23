@@ -12,11 +12,12 @@
 | 技术底座 | ✅ React + Vite + TypeScript + Cloudflare Worker + Zod + D1 |
 | 代码实现 | ✅ 主链路可运行 |
 | Demo 数据 | ✅ 33 SKU / 9 份仿真询价 / 3 客户 |
-| 自动化测试 | ✅ 41 个测试通过 |
+| 自动化测试 | ✅ 46 个测试通过 |
 | DeepSeek 实调用 | ✅ 线上 Worker Key 已配置，实时抽取已验收 |
 | wayknow 前端 | ✅ 已构建到 `work/wayknow/quotesentry/` |
 | 线上部署 | ✅ `wayknow.tech/quotesentry/` + Worker API + D1 已上线 |
-| 比赛录屏/路演材料 | ✅ 演示视频、SRT、A4 一页纸均已完成 |
+| 线上对话审单 | ✅ Worker Version `1ad89225`，三轮对话与审批边界已验收 |
+| 比赛录屏/路演材料 | ⚠️ 初版已录；视频 3:34 超过 3 分钟，需重录 |
 
 ## ✅ Done
 
@@ -33,6 +34,11 @@
 - 实现三行询价（可报价 / 待澄清 / 目录外）并行处理，异常行不拖死整封询价。
 - 实现人工审批、毛利 override（强制原因）、审计时间线。
 - 实现审批后的客户 CSV/PDF 导出，内部成本/毛利不进入客户文件。
+- 实现三轮对话审单：首轮审单、按行补充规格并重算、解释阻断原因；人工补充字段写入 `human` 证据和审计。
+- 对话只返回结构化结果与动作建议，不自动审批、不自动导出；审批仍由报价审批页的按钮和人工确认完成。
+- 构建并推送 `wayknow/quotesentry`，部署 Worker Version `1ad89225-1d5d-46c7-9f96-3f2b2955f3fe`。
+- 线上完成三轮对话验收：首轮 `PRICED / NEEDS_CLARIFICATION / NO_MATCH`，补充第二行镀锌后变为 `PRICED / PRICED / NO_MATCH`，第三行解释与“去报价审批”按钮均正确；对话未触发审批或导出审计。
+- 线上验收后执行 `reset-demo`，`seed-08` 恢复为 `RECEIVED`、0 行、0 轮对话的干净演示状态。
 - 实现 `SEND_MODE=disabled` 服务端拒绝外发。
 - 实现演示数据重置、健康检查、bootstrap、询价 CRUD 与导出 API。
 - 完成 1440px 桌面浏览器渲染检查。
@@ -56,7 +62,7 @@
 
 ```text
 npm run check    ✅
-npm test         ✅ 8 files / 41 tests
+npm test         ✅ 9 files / 46 tests
 npm run test:deepseek ✅ 真实 DeepSeek 直连成功
 npm run seed     ✅ 9/9 samples recognized
 npm run build    ✅
@@ -90,6 +96,8 @@ npm run db:migrate:local ✅
 
 | 任务 | 完成定义 |
 |---|---|
+| 参赛视频重录 | 压到 2:40–2:55，覆盖审单 → 补参 → 解释 → 按钮审批/导出 |
+| 参赛材料补齐 | 7 模块方案、体验二维码、提报信息表、自创承诺书、身份材料 |
 | D1 备份与配额 | 比赛后补自动备份、配额告警和恢复演练 |
 | 静态资源缓存/带宽 | 线上首次资源加载偶发较慢，比赛前复查 Cloudflare 缓存策略 |
 | 现场彩排 | 用一页纸 + 录屏完成一次 3–5 分钟讲解，确认节奏、追问和故障兜底 |
@@ -108,5 +116,6 @@ npm run db:migrate:local ✅
 
 ## 下一步
 
-1. 用线上地址完成一次彩排，检查静态资源首次加载和 API 延迟。
-2. 比赛前执行 `POST /api/reset-demo`，确保从 9 份干净样例开始。
+1. 按参赛模板重录 3 分钟以内视频并生成体验二维码。
+2. 补齐 7 模块方案、提报信息表、自创承诺书和身份材料。
+3. 比赛前再执行一次 `POST /api/reset-demo`，确保从 9 份干净样例开始。

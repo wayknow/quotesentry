@@ -4,7 +4,7 @@
 
 ## 当前状态
 
-MVP 已可运行：33 个仿真 SKU、9 份仿真询价、邮件文本 + Excel/CSV 输入、逐行证据、目录硬匹配、确定性计价、人工审批、毛利 override、CSV/PDF 导出和审计时间线。
+MVP 已可运行：33 个仿真 SKU、9 份仿真询价、邮件文本 + Excel/CSV 输入、逐行证据、目录硬匹配、确定性计价、三轮对话补参、人工审批、毛利 override、CSV/PDF 导出和审计时间线。
 
 正式部署形态为 **Cloudflare Worker + D1**：Worker 负责 API 与 DeepSeek 调用，D1 保存询价、报价、审批、审计以及上传原文和客户导出的文件字节。R2 保留为后续可选归档后端；当前账号未开通 R2，不影响演示主链路。Express + 本地 JSON 保留为离线开发回退。
 
@@ -36,9 +36,12 @@ QuoteSentry 读取邮件文本和 Excel 询价，逐行抽取规格并回指原�
 
 然后进入“报价审批”查看客户视图与内部成本/毛利隔离；审批后导出 CSV/PDF，在“审计时间线”核对模型、规则版本、哈希和责任人。
 
+需要连续对话时进入“对话审单”：第一轮审单 → 回复“第二行表面处理是镀锌”触发重算 → 追问“为什么第三行不能报价”。对话只做理解、补参和解释；审批与导出仍必须由按钮和人工确认。
+
 ## 核心安全边界
 
 - LLM 只做字段抽取；价格、折扣、汇率、费用、毛利、合计全部由确定性代码计算。
+- 对话只做补参与解释，不自动审批、不自动导出、不自动外发。
 - LLM 返回的原文片段必须能在询价中找到，否则标为未验证并阻断。
 - 模型返回的 SKU/价格字段不参与业务事实，SKU 只来自目录硬过滤。
 - `SEND_MODE=disabled` 时服务端始终拒绝发送；比赛版只允许审批后导出。
@@ -60,7 +63,7 @@ npm run dev       # 同时启动 Vite 和 Express（离线回退）
 npm run dev:worker # 启动本地 Cloudflare Worker（D1）
 npm run db:migrate:local # 初始化本地 D1
 npm run check     # TypeScript 类型检查
-npm test          # 41 个金标/领域/Worker 测试
+npm test          # 46 个金标/领域/Worker/对话测试
 npm run test:deepseek  # 用真实 Key 直连 DeepSeek 做 smoke test
 npm run seed      # 校验 9 份仿真询价均可识别
 npm run build     # 生产构建
