@@ -7,7 +7,7 @@
 
 作品名称：QuoteSentry 报价哨兵
 负责人：wayknow
-联系电话：【待填写：手机号】
+联系电话：
 联系邮箱：develop@wayknow.tech
 所属单位：wayknow
 
