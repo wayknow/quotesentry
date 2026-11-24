@@ -13,7 +13,8 @@
 | `QuoteSentry-产品解决方案-8模块.pdf` | 最终提交版方案，含截图和二维码 | 已生成 |
 | `QuoteSentry-产品解决方案-8模块.docx` | 可编辑 Word 版方案 | 已生成 |
 | `QuoteSentry-产品解决方案-8模块.html` | 方案排版源文件 | 已生成 |
-| `QuoteSentry-作品提报信息表-填写稿.md` | 提报表逐项填写稿 | 待补真实身份信息 |
+| `QuoteSentry-作品提报信息表-填写稿.md` | 提报表逐项填写稿 | 已填负责人信息；待补手机号与签字 |
+| `QuoteSentry-提交邮件-正文.txt` | 可直接复制的提交邮件正文 | 待补手机号 |
 | `QuoteSentry-提交清单与邮件模板.md` | 最终打包与发送清单 | 已生成 |
 | `assets/QuoteSentry-demo-qr-card.png` | 路演和说明文档用二维码卡片 | 已生成并校验 |
 | `assets/QuoteSentry-demo-qr.png` | 纯二维码 | 已生成并校验 |
