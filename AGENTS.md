@@ -145,6 +145,7 @@ rg -n 'localhost|127.0.0.1' client/src
 
 - 前端产物构建到 `work/wayknow/quotesentry/`；API 部署到 Cloudflare Worker，由 Cloudflare Route 接管 `/quotesentry/api/*`。
 - Worker 已通过 Cloudflare Route `wayknow.tech/quotesentry/api/*` 接入，不需要 Nginx 反代这个 API 路径。
+- 前端只负责构建、提交并推送 `wayknow` 仓库；**不要尝试 SSH 登录服务器或触发 `git pull`**，生产服务器由用户手动拉取。
 - 远程 secret、D1 迁移和重新部署需用户明确要求后执行，细节见 [deploy.md](deploy.md)。
 - 不要把 `.dev.vars`、DeepSeek Key、D1 状态或本地 R2 文件提交到任一仓库。
 

@@ -68,11 +68,13 @@ npm run build:wayknow
 ../wayknow/quotesentry/assets/*
 ```
 
-提交并推送 `wayknow` 仓库后，服务器执行：
+提交并推送 `wayknow` 仓库后，由用户手动在服务器执行：
 
 ```bash
 ssh ubuntu@43.160.219.45 "cd /var/www/html && sudo git pull"
 ```
+
+Agent 不要尝试 SSH 或代执行该步骤；只负责推送到 GitHub。
 
 `quotesentry/` 是独立页面，不在主导航、页脚或 sitemap 中。
 
