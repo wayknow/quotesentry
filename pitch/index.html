@@ -335,12 +335,12 @@
         <div class="hero-tagline">模型负责读 · 规则负责算 · 人负责担责</div>
         <div class="badges">
           <span class="badge">真实 DeepSeek 全链路已验证</span>
-          <span class="badge">31 个自动化测试</span>
+          <span class="badge">46 个自动化测试</span>
           <span class="badge">仿真数据 Demo</span>
         </div>
       </div>
       <div class="hero-proof">
-        <div class="hero-stat"><strong>3 → 1</strong><span>三行询价只放行 <em>1 条可报价行</em><br />1 条待澄清，1 条目录外</span></div>
+        <div class="hero-stat"><strong>3 → 2</strong><span>补参后 <em>2 行可报价</em>，1 行目录外阻断<br />首轮为 1 可报价 / 1 待澄清 / 1 目录外</span></div>
         <div class="hero-stat"><strong>26/26</strong><span>字段证据全部回指原文<br />无法验证的片段不进入报价</span></div>
         <div class="hero-stat"><strong>0</strong><span>成本与毛利进入客户文件<br />客户视图和内部审批严格隔离</span></div>
       </div>
@@ -383,9 +383,9 @@
         </article>
 
         <article class="card shot-card">
-          <div class="shot-head"><span>LIVE PRODUCT / 三行审单</span><strong>证据可回指 · 价格可复核</strong></div>
-          <img src="assets/quote-sentry-demo.png" alt="QuoteSentry 三行询价审单界面" />
-          <div class="shot-foot"><span>真实 DeepSeek 抽取</span><b>仿真目录与价格，仅用于演示</b></div>
+          <div class="shot-head"><span>LIVE PRODUCT / 三轮对话</span><strong>补参重算 · 证据可回指</strong></div>
+          <img src="assets/quote-sentry-demo.png" alt="QuoteSentry 三轮对话补参重算界面" />
+          <div class="shot-foot"><span>真实 DeepSeek 抽取</span><b>补参后 2 行可报价；仿真数据仅用于演示</b></div>
         </article>
 
         <article class="card evidence-card">
@@ -413,15 +413,15 @@
               <div><b>M12x75 8.8 ZN → HB-M12X75-88-ZN</b><span>目录硬匹配；确定性计价；客户金额 USD 465.00</span></div>
             </div>
             <div class="proof-row">
-              <span class="status warn">CLARIFY</span>
-              <div><b>缺表面处理 → 待澄清</b><span>不猜规格，不生成正式价格；生成英文澄清草稿</span></div>
+              <span class="status ok">PRICED</span>
+              <div><b>补“镀锌” → 重新匹配计价</b><span>首轮待澄清；人工补充证据后变为可报价，USD 1,127.78</span></div>
             </div>
             <div class="proof-row">
               <span class="status bad">NO MATCH</span>
-              <div><b>M14x60 目录外 → 明确停止</b><span>不用相似规格替代；异常不拖死整封询价</span></div>
+              <div><b>M14x60 目录外 → 明确停止</b><span>不用相似规格替代；第三轮解释完整失败条件</span></div>
             </div>
           </div>
-          <div class="boundary-callout">报价审批展示客户视图与内部成本隔离；CSV / PDF 不含成本、毛利、折扣和内部异常。当前 <b>SEND_MODE=disabled</b>，比赛版只导出，不假装已接入真实邮箱。</div>
+          <div class="boundary-callout">对话只补参与解释，不会自动审批。客户报价合计 <b>USD 1,592.78</b>；客户视图不含成本与毛利，审批后才可导出。当前 <b>SEND_MODE=disabled</b>。</div>
         </article>
 
         <article class="card">

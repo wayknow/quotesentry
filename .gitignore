@@ -15,3 +15,8 @@ data/exports/
 # Internal planning documents (keep local only)
 Agent大赛项目选型调研报告.md
 Codex改造任务书.md
+
+# Private contest identity/signature files (never commit)
+submission/private/
+submission/*身份证*
+submission/*承诺书-已签*

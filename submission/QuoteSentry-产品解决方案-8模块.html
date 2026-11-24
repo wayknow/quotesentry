@@ -1,0 +1,295 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>QuoteSentry 报价哨兵｜Agent 赛道产品解决方案</title>
+  <style>
+    :root {
+      --ink: #10251f;
+      --muted: #5b6c66;
+      --line: #dce6e0;
+      --paper: #f4f8f5;
+      --teal: #0a6b53;
+      --mint: #51d4a8;
+      --amber: #9a6200;
+      --red: #a33b2f;
+      --sans: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", sans-serif;
+      --mono: "SFMono-Regular", "Menlo", "Consolas", monospace;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; background: #dfe7e2; color: var(--ink); }
+    body { font-family: var(--sans); -webkit-font-smoothing: antialiased; }
+    @page { size: A4; margin: 0; }
+    .page {
+      width: 210mm;
+      min-height: 297mm;
+      padding: 15mm 16mm 13mm;
+      margin: 10mm auto;
+      background: #fff;
+      box-shadow: 0 16px 48px rgba(14, 44, 34, .16);
+      position: relative;
+      overflow: hidden;
+      page-break-after: always;
+    }
+    .page:last-child { page-break-after: auto; }
+    .page::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background-image:
+        linear-gradient(rgba(10, 107, 83, .025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(10, 107, 83, .025) 1px, transparent 1px);
+      background-size: 14mm 14mm;
+    }
+    .content { position: relative; z-index: 1; }
+    .cover {
+      border-radius: 3mm;
+      padding: 9mm;
+      color: #fff;
+      background:
+        radial-gradient(circle at 86% 8%, rgba(81, 212, 168, .22), transparent 30%),
+        linear-gradient(130deg, #062a23 0%, #07523f 62%, #0a6b53 100%);
+      overflow: hidden;
+      position: relative;
+      margin-bottom: 7mm;
+    }
+    .cover::after {
+      content: "QS";
+      position: absolute;
+      right: -4mm;
+      bottom: -24mm;
+      font-size: 110pt;
+      line-height: 1;
+      font-weight: 800;
+      color: rgba(255,255,255,.04);
+      letter-spacing: -.1em;
+    }
+    .eyebrow { font-size: 8pt; color: var(--mint); font-weight: 800; letter-spacing: .14em; text-transform: uppercase; }
+    h1 { margin: 3mm 0 2mm; font-size: 28pt; line-height: 1.05; letter-spacing: -.04em; }
+    .cover p { margin: 0; max-width: 148mm; color: rgba(255,255,255,.8); font-size: 10pt; line-height: 1.65; }
+    .cover-meta { display: flex; flex-wrap: wrap; gap: 2mm; margin-top: 5mm; }
+    .pill { padding: 1.2mm 2.4mm; border-radius: 99px; border: 1px solid rgba(255,255,255,.2); color: rgba(255,255,255,.82); font-size: 7.5pt; }
+    h2 { margin: 0 0 2.4mm; font-size: 15pt; line-height: 1.2; letter-spacing: -.02em; }
+    h3 { margin: 0 0 1.4mm; font-size: 10.6pt; }
+    .section { margin-top: 6mm; }
+    .section-head { display: flex; align-items: baseline; justify-content: space-between; gap: 4mm; border-bottom: 1px solid var(--line); padding-bottom: 2mm; margin-bottom: 3mm; }
+    .section-kicker { font-size: 7.4pt; color: var(--teal); letter-spacing: .13em; font-weight: 800; }
+    .count { font-size: 7.2pt; color: var(--muted); white-space: nowrap; }
+    p { margin: 0; font-size: 9.8pt; line-height: 1.75; color: #2f423c; }
+    .lead { font-size: 11pt; line-height: 1.65; }
+    .lead strong { color: var(--teal); }
+    .note { margin-top: 3mm; padding: 3mm 3.4mm; border-left: 1.3mm solid var(--teal); background: #eef8f3; color: #35534a; font-size: 8.5pt; line-height: 1.65; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 4mm; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3mm; }
+    .mini-card { padding: 3mm; border: 1px solid var(--line); border-radius: 2.2mm; background: var(--paper); }
+    .mini-card small { display: block; color: var(--teal); font-size: 6.8pt; letter-spacing: .08em; font-weight: 800; margin-bottom: 1mm; }
+    .mini-card b { display: block; font-size: 9.2pt; margin-bottom: 1mm; }
+    .mini-card span { display: block; font-size: 8.1pt; line-height: 1.55; color: var(--muted); }
+    .feature { margin-top: 4mm; padding: 4mm; border: 1px solid var(--line); border-radius: 2.5mm; background: #fff; }
+    .feature-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 4mm; }
+    .feature-num { width: 8mm; height: 8mm; flex: 0 0 auto; border-radius: 2mm; display: grid; place-items: center; background: var(--teal); color: #fff; font-size: 9pt; font-weight: 800; }
+    .feature-copy { flex: 1; }
+    .feature-copy p { font-size: 9.1pt; line-height: 1.55; }
+    figure { margin: 3mm 0 0; }
+    figure img { display: block; width: 100%; height: 52mm; object-fit: cover; object-position: top; border-radius: 1.8mm; border: 1px solid #cfdcd5; background: #0a1c26; }
+    figcaption { margin-top: 1.4mm; color: var(--muted); font-size: 7.4pt; line-height: 1.45; }
+    .flow { display: grid; grid-template-columns: repeat(4, 1fr); gap: 2mm; margin-top: 3mm; }
+    .step { padding: 2.5mm; border-radius: 2mm; border: 1px solid #cbe7da; background: #edf8f3; }
+    .step small { display: block; font-size: 6.6pt; color: var(--teal); font-weight: 800; letter-spacing: .08em; }
+    .step b { display: block; margin-top: 1mm; font-size: 8.5pt; }
+    .step span { display: block; margin-top: .7mm; color: var(--muted); font-size: 7.3pt; line-height: 1.4; }
+    .compare { width: 100%; border-collapse: collapse; margin-top: 3mm; font-size: 8.2pt; }
+    .compare th, .compare td { padding: 2.2mm; border: 1px solid var(--line); text-align: left; vertical-align: top; }
+    .compare th { background: #edf8f3; color: var(--teal); }
+    .proof-list { display: grid; grid-template-columns: 1fr 1fr; gap: 3mm; margin-top: 3mm; }
+    .proof { padding: 3mm; border-radius: 2mm; background: var(--paper); border: 1px solid var(--line); }
+    .proof strong { display: block; color: var(--teal); font-size: 13pt; }
+    .proof span { display: block; margin-top: 1mm; color: var(--muted); font-size: 8pt; line-height: 1.5; }
+    .qr-wrap { display: flex; align-items: center; gap: 6mm; margin-top: 4mm; padding: 4mm; border-radius: 2.5mm; background: var(--paper); border: 1px solid var(--line); }
+    .qr-wrap img { width: 42mm; height: 56mm; object-fit: contain; border-radius: 2mm; }
+    .qr-wrap.compact { gap: 4mm; margin-top: 2mm; padding: 3mm; }
+    .qr-wrap.compact img { width: 34mm; height: 34mm; }
+    .qr-wrap.compact .qr-copy strong { font-size: 11pt; }
+    .qr-wrap.compact .qr-copy p { margin-top: 1.2mm; font-size: 7.7pt; line-height: 1.45; }
+    .qr-wrap.compact .qr-copy code { margin-top: 1.6mm; padding: 1.4mm 2mm; font-size: 6.8pt; }
+    .qr-copy strong { display: block; font-size: 13pt; color: var(--teal); }
+    .qr-copy p { margin-top: 2mm; font-size: 8.6pt; }
+    .qr-copy code { display: block; margin-top: 2.5mm; padding: 2mm 2.5mm; background: #062a23; color: #d8fff0; border-radius: 1.5mm; font-family: var(--mono); font-size: 7.1pt; word-break: break-all; }
+    .disclaimer { margin-top: 5mm; padding-top: 3mm; border-top: 1px solid var(--line); color: var(--muted); font-size: 7.5pt; line-height: 1.6; }
+    .footer { position: absolute; left: 16mm; right: 16mm; bottom: 7mm; display: flex; justify-content: space-between; color: #788a83; font-size: 6.8pt; }
+    @media screen and (max-width: 900px) { .page { margin: 0; width: 100%; } }
+    @media print { html, body { background: #fff; } .page { margin: 0; box-shadow: none; } }
+  </style>
+</head>
+<body>
+  <article class="page">
+    <div class="content">
+      <header class="cover">
+        <div class="eyebrow">Agent 赛道 / 产品解决方案（8 模块提交版）</div>
+        <h1>QuoteSentry 报价哨兵</h1>
+        <p>面向中国高混紧固件外贸商的询价审单 Agent。把邮件和 Excel 询价逐行转成有证据、有边界、可审批的报价。</p>
+        <div class="cover-meta">
+          <span class="pill">三轮以上连续对话</span>
+          <span class="pill">确定性计价</span>
+          <span class="pill">人工审批与审计</span>
+          <span class="pill">仿真数据 Demo</span>
+        </div>
+      </header>
+
+      <section class="section">
+        <div class="section-head">
+          <div><div class="section-kicker">01 / POSITIONING</div><h2>作品名称与一句话定位</h2></div>
+          <span class="count">≤30 字</span>
+        </div>
+        <p class="lead"><strong>作品名称：</strong>QuoteSentry（报价哨兵）</p>
+        <p class="lead"><strong>一句话定位：</strong>QuoteSentry 报价哨兵｜紧固件外贸询价审单 Agent</p>
+        <div class="note">对外展示使用 30 字定位；产品界面、视频和二维码统一使用 QuoteSentry / 报价哨兵。</div>
+      </section>
+
+      <section class="section">
+        <div class="section-head">
+          <div><div class="section-kicker">02 / PAIN</div><h2>痛点场景</h2></div>
+          <span class="count">93 字 / 80–100 字</span>
+        </div>
+        <p>高混紧固件外贸商每天从邮件、Excel 和 PDF 中拆出多行询价，再补标准、材质、强度、表面处理和数量。缺参、写法冲突或目录外规格一旦被相似 SKU 替代，就会造成错报价、返工、空运和审批无痕。</p>
+      </section>
+
+      <section class="section">
+        <div class="section-head">
+          <div><div class="section-kicker">03 / SOLUTION</div><h2>解决方案</h2></div>
+          <span class="count">113 字 / 80–120 字</span>
+        </div>
+        <p>QuoteSentry 用 Agent 逐行读取询价并回指原文，先做缺参、冲突和单位门禁，再回私有目录硬匹配 SKU，由确定性规则计算折扣、阶梯价、汇率、费用和毛利。异常行被明确阻断，模型只做抽取和解释；审批、导出和外发必须由人确认。</p>
+        <div class="note">边界：大模型不计算价格，不决定 SKU，不自动审批、不自动导出、不自动外发。</div>
+      </section>
+
+      <section class="section">
+        <div class="qr-wrap compact">
+          <img src="assets/QuoteSentry-demo-qr.png" alt="QuoteSentry 体验二维码" />
+          <div class="qr-copy">
+            <strong>扫码体验三轮对话</strong>
+            <p>线上地址已部署 Cloudflare Worker + D1，当前使用 DeepSeek <code style="display:inline;padding:0;background:none;color:var(--teal);font-size:8pt">deepseek-chat</code> 做字段抽取与解释。</p>
+            <code>https://wayknow.tech/quotesentry/?tab=chat&amp;doc=seed-08</code>
+            <p>演示使用仿真目录、客户和询价；客户外发已禁用。审批、导出和 override 必须由人确认。</p>
+          </div>
+        </div>
+      </section>
+    </div>
+    <footer class="footer"><span>QuoteSentry 报价哨兵 · Agent 赛道产品解决方案</span><span>1 / 3</span></footer>
+  </article>
+
+  <article class="page">
+    <div class="content">
+      <section class="section" style="margin-top:0">
+        <div class="section-head">
+          <div><div class="section-kicker">04 / CORE FEATURES</div><h2>核心功能</h2></div>
+          <span class="count">3 个功能 · 每个 30–50 字</span>
+        </div>
+
+        <div class="feature">
+          <div class="feature-head">
+            <div class="feature-num">1</div>
+            <div class="feature-copy">
+              <h3>逐行抽取与证据回指</h3>
+              <p>每行独立识别规格、数量和异常，字段证据回到原邮件或表格位置。（40 字）</p>
+            </div>
+          </div>
+          <figure>
+            <img src="assets/01-round1.png" alt="首轮三行询价审单结果" />
+            <figcaption>首轮结果：完整行可报价；缺表面处理行待澄清；目录外行明确阻断，异常行不影响其他行。</figcaption>
+          </figure>
+        </div>
+
+        <div class="feature">
+          <div class="feature-head">
+            <div class="feature-num">2</div>
+            <div class="feature-copy">
+              <h3>目录硬匹配与确定性计价</h3>
+              <p>SKU 必须命中私有目录，价格、折扣、汇率、费用和毛利全部可复算。（44 字）</p>
+            </div>
+          </div>
+          <figure>
+            <img src="assets/02-round2.png" alt="补充第二行镀锌后重新审单" />
+            <figcaption>第二轮补充“镀锌”后写入人工证据并重算，两行可报价，整单 USD 1,592.78；第三行仍不替代。</figcaption>
+          </figure>
+        </div>
+
+        <div class="feature">
+          <div class="feature-head">
+            <div class="feature-num">3</div>
+            <div class="feature-copy">
+              <h3>三轮对话与人工审批</h3>
+              <p>补参自动重算，解释阻断原因；审批、override、导出均由人确认。（44 字）</p>
+            </div>
+          </div>
+          <figure>
+            <img src="assets/06-approve-modal.png" alt="人工审批确认框" />
+            <figcaption>对话只返回审批入口；负责人核对版本、金额、毛利和可报价行数后，点击按钮完成审批。</figcaption>
+          </figure>
+        </div>
+      </section>
+    </div>
+    <footer class="footer"><span>模型负责读 · 规则负责算 · 人负责担责</span><span>2 / 3</span></footer>
+  </article>
+
+  <article class="page">
+    <div class="content">
+      <section class="section" style="margin-top:0">
+        <div class="section-head">
+          <div><div class="section-kicker">05 / USER FLOW</div><h2>使用流程</h2></div>
+          <span class="count">99 字 / 80–100 字</span>
+        </div>
+        <p>进入对话审单，发送询价或上传表格；Agent 逐行抽取并标记可报价、待澄清和目录外。补充缺失字段后自动重算，进入报价审批核对客户视图、成本和毛利。人工确认后导出客户 CSV/PDF，审计时间线记录过程。</p>
+        <div class="flow">
+          <div class="step"><small>01 / INPUT</small><b>邮件或表格</b><span>保留原文和行号</span></div>
+          <div class="step"><small>02 / REVIEW</small><b>逐行审单</b><span>门禁与目录硬匹配</span></div>
+          <div class="step"><small>03 / APPROVE</small><b>人工审批</b><span>看客户与内部视图</span></div>
+          <div class="step"><small>04 / EXPORT</small><b>导出与审计</b><span>CSV/PDF 与责任链</span></div>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-head">
+          <div><div class="section-kicker">06 / DIFFERENCE</div><h2>差异化价值</h2></div>
+          <span class="count">79 字 / 60–80 字</span>
+        </div>
+        <p>通用大模型能读会写，却不掌握客户目录、协议价和审批责任；人工报价依赖经验、难以追溯。模型只做抽取与解释，价格交给规则，承诺动作交给人，可阻断、可复核、可追责。</p>
+        <table class="compare">
+          <thead><tr><th>替代方案</th><th>局限</th><th>QuoteSentry 的切口</th></tr></thead>
+          <tbody>
+            <tr><td>人工 + Excel</td><td>慢、易漏项、审批无痕</td><td>保留表格入口，增加逐行证据和门禁</td></tr>
+            <tr><td>通用大模型</td><td>能读能写，但不保证目录、价格和责任</td><td>模型只抽取，规则计价，人工审批</td></tr>
+            <tr><td>ERP / 报价 SaaS</td><td>依赖结构化数据和深度实施</td><td>站在 ERP 前处理脏邮件与非标准附件</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section class="section">
+        <div class="section-head">
+          <div><div class="section-kicker">07 / AUDIENCE</div><h2>适用人群</h2></div>
+          <span class="count">60 字 / 40–60 字</span>
+        </div>
+        <p>高混紧固件外贸商的报价员、销售主管和外贸公司负责人；也适用于有私有目录、客户专属折扣和人工审批流程的五金标准件出口企业。</p>
+      </section>
+
+      <section class="section">
+        <div class="section-head">
+          <div><div class="section-kicker">08 / DEMO &amp; EVIDENCE</div><h2>Demo 与验证证据</h2></div>
+          <span class="count">补充模块</span>
+        </div>
+        <div class="proof-list">
+          <div class="proof"><strong>2:43</strong><span>参赛视频，覆盖首轮审单、补参重算、目录外解释、审批边界、导出与审计。</span></div>
+          <div class="proof"><strong>4 轮</strong><span>连续有效对话：审单、补镀锌、解释阻断、请求审批；对话不自动审批。</span></div>
+          <div class="proof"><strong>46 / 46</strong><span>领域、计价、对话、Worker、鉴权与导出隔离自动化测试全部通过。</span></div>
+          <div class="proof"><strong>26 / 26</strong><span>字段证据回指原文；无法验证的片段不进入报价。</span></div>
+        </div>
+
+        <div class="disclaimer">本材料不宣称真实客户、真实 ROI 或成交提升。当前证明的是业务闭环、证据链、异常阻断和审批责任；商业假设需在赛后用设计伙伴和脱敏询价验证。</div>
+      </section>
+    </div>
+    <footer class="footer"><span>https://wayknow.tech/quotesentry/</span><span>3 / 3</span></footer>
+  </article>
+</body>
+</html>

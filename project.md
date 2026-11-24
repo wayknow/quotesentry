@@ -237,9 +237,9 @@ foreignAmount   = cnyAmount / cnyPerUnitCurrency
 | D2 | 抽取 + 原文证据 + 行级状态 + 缺参/冲突门禁 | ✅ 完成 |
 | D3 | 目录硬过滤 + 确定性计价 + 金标测试 + 审批状态 | ✅ 完成 |
 | D4 | 审单界面、审批/override、CSV/PDF 导出、审计时间线 | ✅ 完成 |
-| D5 | 真实 DeepSeek smoke test、录 5 分钟 demo、参赛说明 | ✅ 完成 |
+| D5 | 真实 DeepSeek smoke test、录 3 分钟以内 demo、参赛说明 | ✅ 完成 |
 
-**当前结论**：已采用 greenfield thin slice，主链路、三轮对话补参、46 个测试、真实模型调用、Worker + D1 线上链路、2 分 43 秒参赛视频和 A4 一页纸均已完成；DeepSeek 线上 Key 已配置并验收。剩余风险集中在现场网络和模型额度/限流。
+**当前结论**：已采用 greenfield thin slice，主链路、三轮对话补参、46 个测试、真实模型调用、Worker + D1 线上链路、2 分 43 秒参赛视频、A4 一页纸和 8 模块提交材料均已完成；剩余工作是签署身份材料、填写真实联系人信息并发送提交邮件。
 
 ## 14. 相关文档
 
