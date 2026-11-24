@@ -1,6 +1,6 @@
 # Project Status
 
-> Last updated: 2026-11-23
+> Last updated: 2026-11-24
 
 ## 总览
 
@@ -12,8 +12,9 @@
 | 技术底座 | ✅ React + Vite + TypeScript + Cloudflare Worker + Zod + D1 |
 | 代码实现 | ✅ 主链路可运行 |
 | Demo 数据 | ✅ 33 SKU / 9 份仿真询价 / 3 客户 |
-| 自动化测试 | ✅ 46 个测试通过 |
+| 自动化测试 | ✅ 51 个测试通过 |
 | DeepSeek 实调用 | ✅ 线上 Worker Key 已配置，实时抽取已验收 |
+| 模型选择器 | ✅ Flash（默认）/ V4 Pro 已在本地实现；待真实调用复验、构建与部署 |
 | wayknow 前端 | ✅ 已构建到 `work/wayknow/quotesentry/` |
 | 线上部署 | ✅ `wayknow.tech/quotesentry/` + Worker API + D1 已上线 |
 | 线上对话审单 | ✅ Worker Version `1ad89225`，三轮对话与审批边界已验收 |
@@ -24,6 +25,9 @@
 - 建立 React/Vite 桌面工作台与 Express API。
 - 实现邮件文本、CSV、XLSX 三种上传/输入路径。
 - 实现 DeepSeek OpenAI 兼容网关：服务端直连、JSON 校验、超时、有限重试、代码块兼容、失败降级。
+- 实现可切换字段抽取模型：右上角 `DeepSeek Flash`（默认）/ `DeepSeek V4 Pro`，选择持久化到浏览器；服务端只接受 `flash`、`pro` 两个受控 ID 并解析为实际模型名，非法值返回 400。旧 `chat` 值自动回落到 Flash。
+- 模型选择只传入抽取链路，审计记录实际模型名；SKU 匹配、整数分计价、毛利、审批和客户导出不读取模型选择。
+- 真实调用复验：默认 Flash 分析审计记录 `deepseek-flash`，显式选择 Pro 记录 `deepseek-v4-pro`；两者均得到 `PRICED / NEEDS_CLARIFICATION / NO_MATCH`、USD 465.00 和 21.09% 毛利，Pro 约 9 秒、Flash 约 4 秒。
 - 对齐 `app_survey` 的服务端接入方式：`DEEPSEEK_API_KEY` + `Bearer` + `https://api.deepseek.com/chat/completions`，并提供真实 Key smoke 命令。
 - 用真实 Key 完成服务端直连 smoke：HTTP 请求成功并返回合法 JSON，确认端点、鉴权和模型名可用。
 - 线上 Worker 配置 `DEEPSEEK_API_KEY`，`/quotesentry/api/health` 已返回 `engine: "llm"`、`llmConfigured: true`。
@@ -66,7 +70,7 @@
 
 ```text
 npm run check    ✅
-npm test         ✅ 9 files / 46 tests
+npm test         ✅ 10 files / 51 tests
 npm run test:deepseek ✅ 真实 DeepSeek 直连成功
 npm run seed     ✅ 9/9 samples recognized
 npm run build    ✅

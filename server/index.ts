@@ -36,5 +36,5 @@ app.use(errorHandler);
 
 app.listen(config.port, '127.0.0.1', () => {
   console.log(`QuoteSentry API listening on http://127.0.0.1:${config.port}`);
-  console.log(`Mode: ${config.appMode} · engine: ${config.llm.apiKey ? config.llm.model : 'rules'} · send: ${config.sendMode}`);
+  console.log(`Mode: ${config.appMode} · engine: ${config.llm.apiKey ? config.llm.flashModel : 'rules'} · send: ${config.sendMode}`);
 });

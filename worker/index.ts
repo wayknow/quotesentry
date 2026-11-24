@@ -1,5 +1,6 @@
 import * as XLSX from 'xlsx';
 import { z } from 'zod';
+import { DEFAULT_MODEL_ID, modelIdSchema } from '../shared/models.js';
 import type { BootstrapResponse, RfqDocument, SourceType } from '../shared/schema.js';
 import { analyzeDocument } from '../server/domain/analyze.js';
 import { handleAgentTurn } from '../server/domain/conversation.js';
@@ -14,12 +15,13 @@ import {
 import { AppError } from '../server/errors.js';
 import { customerQuoteCsv, customerQuotePdf } from '../server/exporters.js';
 import { hasLlmKey, llmConfigFromEnv, type LlmConfig } from '../server/llm/client.js';
+import { llmForModelId, publicModelOptions } from '../server/llm/models.js';
 import { hashBytes, hashText, makeId, nowIso } from '../server/utils.js';
 import { saveArtifact } from './artifacts.js';
 import { enforceBasicAuth } from './auth.js';
 import { catalogRev, dataCache } from './data.js';
 import type { Env, WorkerModule } from './env.js';
-import { empty, errorResponse, json, readJsonObject } from './http.js';
+import { empty, errorResponse, json, readJsonObject, readOptionalJsonObject } from './http.js';
 import { createSeedDocuments } from './seed.js';
 import { D1DocumentStore } from './store.js';
 
@@ -32,9 +34,11 @@ const createTextSchema = z.object({
 });
 
 const actorSchema = z.object({ actor: z.string().trim().min(1).max(80) });
+const analyzeSchema = z.object({ modelId: modelIdSchema.optional() }).passthrough().optional();
 const chatSchema = z.object({
   message: z.string().trim().min(1).max(2000),
   actor: z.string().trim().min(1).max(80).optional(),
+  modelId: modelIdSchema.optional(),
 });
 const overrideSchema = actorSchema.extend({
   lineId: z.string().trim().min(1),
@@ -124,6 +128,7 @@ async function route(
   }
 
   if (action === 'analyze' && request.method === 'POST') {
+    const parsed = analyzeSchema.parse(await readOptionalJsonObject(request));
     const document = await mustGetDocument(store, id);
     if (document.quotes.some((quote) => quote.status === 'APPROVED' || quote.status === 'EXPORTED')) {
       throw new AppError(409, 'QUOTE_LOCKED', '报价已审批或导出，不能重新分析；如需重做，请新建询价。');
@@ -132,7 +137,7 @@ async function route(
       customer: mustGetCustomer(document.customerId),
       catalog: dataCache.catalog,
       rules: dataCache.pricingRules,
-      llm: llmForEnv(env),
+      llm: llmForModelId(llmForEnv(env), parsed?.modelId ?? DEFAULT_MODEL_ID),
     });
     return json(await store.upsertDocument(next));
   }
@@ -144,7 +149,7 @@ async function route(
       customer: mustGetCustomer(document.customerId),
       catalog: dataCache.catalog,
       rules: dataCache.pricingRules,
-      llm: llmForEnv(env),
+      llm: llmForModelId(llmForEnv(env), parsed.modelId ?? DEFAULT_MODEL_ID),
       actor: parsed.actor,
     });
     return json(await store.upsertDocument(next));
@@ -391,7 +396,9 @@ function healthPayload(env: Env) {
     mode: env.APP_MODE === 'production' ? 'production' as const : 'demo' as const,
     engine: hasLlmKey(llm) ? 'llm' as const : 'rules' as const,
     engineLabel: hasLlmKey(llm) ? 'DeepSeek 实时抽取' : '确定性规则模式',
-    model: llm.model,
+    model: llmForModelId(llm, DEFAULT_MODEL_ID).model,
+    modelId: DEFAULT_MODEL_ID,
+    availableModels: publicModelOptions(),
     catalogRevision: catalogRev,
     pricingRuleVersion: dataCache.pricingRules.version,
     sendMode: env.SEND_MODE || 'disabled',
@@ -405,11 +412,15 @@ function llmForEnv(env: Env): LlmConfig {
     DEEPSEEK_API_KEY: env.DEEPSEEK_API_KEY,
     DEEPSEEK_BASE_URL: env.DEEPSEEK_BASE_URL,
     DEEPSEEK_MODEL: env.DEEPSEEK_MODEL,
+    DEEPSEEK_PRO_MODEL: env.DEEPSEEK_PRO_MODEL,
+    DEEPSEEK_FLASH_MODEL: env.DEEPSEEK_FLASH_MODEL,
     DEEPSEEK_TIMEOUT_MS: env.DEEPSEEK_TIMEOUT_MS,
     DEEPSEEK_MAX_RETRIES: env.DEEPSEEK_MAX_RETRIES,
     LLM_API_KEY: env.LLM_API_KEY,
     LLM_BASE_URL: env.LLM_BASE_URL,
     LLM_MODEL: env.LLM_MODEL,
+    LLM_PRO_MODEL: env.LLM_PRO_MODEL,
+    LLM_FLASH_MODEL: env.LLM_FLASH_MODEL,
     LLM_TIMEOUT_MS: env.LLM_TIMEOUT_MS,
     LLM_MAX_RETRIES: env.LLM_MAX_RETRIES,
   });

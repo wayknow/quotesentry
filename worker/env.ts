@@ -10,11 +10,15 @@ export interface Env {
   DEEPSEEK_API_KEY?: string;
   DEEPSEEK_BASE_URL?: string;
   DEEPSEEK_MODEL?: string;
+  DEEPSEEK_PRO_MODEL?: string;
+  DEEPSEEK_FLASH_MODEL?: string;
   DEEPSEEK_TIMEOUT_MS?: string;
   DEEPSEEK_MAX_RETRIES?: string;
   LLM_API_KEY?: string;
   LLM_BASE_URL?: string;
   LLM_MODEL?: string;
+  LLM_PRO_MODEL?: string;
+  LLM_FLASH_MODEL?: string;
   LLM_TIMEOUT_MS?: string;
   LLM_MAX_RETRIES?: string;
 }

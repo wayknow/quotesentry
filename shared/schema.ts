@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import type { ModelId, ModelOption } from './models.js';
 
 export const SOURCE_TYPES = ['text', 'xlsx', 'csv', 'seed'] as const;
 export type SourceType = (typeof SOURCE_TYPES)[number];
@@ -289,6 +290,8 @@ export interface BootstrapResponse {
     engine: EngineMode;
     engineLabel: string;
     model: string;
+    modelId: ModelId;
+    availableModels: ModelOption[];
     catalogRevision: string;
     pricingRuleVersion: string;
     sendMode: string;

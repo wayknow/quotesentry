@@ -2,6 +2,7 @@ export interface LlmConfig {
   baseUrl: string;
   apiKey: string;
   model: string;
+  flashModel: string;
   timeoutMs: number;
   maxRetries: number;
 }
@@ -9,7 +10,8 @@ export interface LlmConfig {
 const DEFAULT_LLM_CONFIG: LlmConfig = {
   baseUrl: 'https://api.deepseek.com',
   apiKey: '',
-  model: 'deepseek-chat',
+  model: 'deepseek-v4-pro',
+  flashModel: 'deepseek-flash',
   timeoutMs: 45_000,
   maxRetries: 1,
 };
@@ -20,7 +22,8 @@ export function llmConfigFromEnv(
   return {
     baseUrl: (env.DEEPSEEK_BASE_URL || env.LLM_BASE_URL || DEFAULT_LLM_CONFIG.baseUrl).replace(/\/$/, ''),
     apiKey: env.DEEPSEEK_API_KEY || env.LLM_API_KEY || '',
-    model: env.DEEPSEEK_MODEL || env.LLM_MODEL || DEFAULT_LLM_CONFIG.model,
+    model: env.DEEPSEEK_PRO_MODEL || env.DEEPSEEK_MODEL || env.LLM_PRO_MODEL || env.LLM_MODEL || DEFAULT_LLM_CONFIG.model,
+    flashModel: env.DEEPSEEK_FLASH_MODEL || env.LLM_FLASH_MODEL || DEFAULT_LLM_CONFIG.flashModel,
     timeoutMs: positiveNumber(
       env.DEEPSEEK_TIMEOUT_MS || env.LLM_TIMEOUT_MS,
       DEFAULT_LLM_CONFIG.timeoutMs,

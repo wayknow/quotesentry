@@ -11,6 +11,8 @@ routes = [
 [vars]
 APP_MODE = "demo"
 SEND_MODE = "disabled"
+DEEPSEEK_PRO_MODEL = "deepseek-v4-pro"
+DEEPSEEK_FLASH_MODEL = "deepseek-flash"
 
 [[d1_databases]]
 binding = "DB"

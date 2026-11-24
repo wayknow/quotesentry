@@ -18,7 +18,7 @@ npm run dev
 - Express 回退：`npm run dev`（前端 `5173`，API `3001`）
 - 生产前端：`npm run build:wayknow`，写入 `../wayknow/quotesentry/`
 
-DeepSeek 默认走 OpenAI 兼容接口。Worker 本地开发复制 `.dev.vars.example` 为 `.dev.vars`，线上用 `npx wrangler secret put DEEPSEEK_API_KEY`；Key 只由服务端读取，不进入浏览器。未配置 Key 时界面明确显示“规则模式”，不会冒充 AI。Express smoke 可运行 `npm run test:deepseek`。
+DeepSeek 默认走 OpenAI 兼容接口。Demo 支持在右上角选择 `DeepSeek Flash`（默认）与 `DeepSeek V4 Pro`；选择只影响字段抽取，不会改变目录、计价、审批或导出规则。服务端用白名单把受控的 `modelId` 映射为实际模型名，`flash` 读取 `DEEPSEEK_FLASH_MODEL=deepseek-flash`，`pro` 读取 `DEEPSEEK_PRO_MODEL=deepseek-v4-pro`。Worker 本地开发复制 `.dev.vars.example` 为 `.dev.vars`，线上用 `npx wrangler secret put DEEPSEEK_API_KEY`；Key 只由服务端读取，不进入浏览器。未配置 Key 时界面明确显示“规则模式”，不会冒充 AI。Express smoke 可运行 `npm run test:deepseek`。
 
 预发/公开演示可同时配置 `BASIC_AUTH_USER` 与 `BASIC_AUTH_PASSWORD` 开启可选 HTTP Basic Auth；本地默认关闭。
 
@@ -52,7 +52,7 @@ QuoteSentry 读取邮件文本和 Excel 询价，逐行抽取规格并回指原�
 
 - 前端：React 18 + Vite + TypeScript，桌面优先。
 - 后端：Cloudflare Worker + TypeScript + Zod；Express 仅作本地回退。
-- 模型：DeepSeek OpenAI 兼容接口；失败时降级规则抽取并显著标注。
+- 模型：DeepSeek Flash / V4 Pro 可切换，默认 Flash；服务端白名单解析，失败时降级规则抽取并显著标注。
 - 数据：D1 持久化询价、审计和文件归档（单文件上限 1 MB）；`POST /api/reset-demo` 可重置演示文档。
 - 文件：Worker 内用 `xlsx` 解析 Excel，`pdf-lib` 生成客户 PDF。
 
@@ -63,7 +63,7 @@ npm run dev       # 同时启动 Vite 和 Express（离线回退）
 npm run dev:worker # 启动本地 Cloudflare Worker（D1）
 npm run db:migrate:local # 初始化本地 D1
 npm run check     # TypeScript 类型检查
-npm test          # 46 个金标/领域/Worker/对话测试
+npm test          # 51 个金标/领域/Worker/对话/模型选择测试
 npm run test:deepseek  # 用真实 Key 直连 DeepSeek 做 smoke test
 npm run seed      # 校验 9 份仿真询价均可识别
 npm run build     # 生产构建
@@ -81,6 +81,7 @@ server/               Express 回退、领域规则、DeepSeek 网关、导出
 server/domain/        抽取、门禁、硬匹配、计价、审批、审计
 migrations/           D1 Schema
 shared/schema.ts      共享 Zod Schema 与类型
+shared/models.ts      受控模型注册表（Flash / V4 Pro）
 data/catalog/         33 个仿真 SKU
 data/samples/         9 份仿真询价
 tests/golden/         计价、门禁、匹配、流程、导出隔离测试

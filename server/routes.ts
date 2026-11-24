@@ -5,6 +5,7 @@ import { Router, type NextFunction, type Request, type Response } from 'express'
 import multer from 'multer';
 import * as XLSX from 'xlsx';
 import { z, ZodError } from 'zod';
+import { DEFAULT_MODEL_ID, modelIdSchema } from '../shared/models.js';
 import type { BootstrapResponse, RfqDocument, SourceType } from '../shared/schema.js';
 import { config } from './config.js';
 import { catalogRev, dataCache } from './data.js';
@@ -23,6 +24,7 @@ import { customerQuoteCsv, customerQuotePdf } from './exporters.js';
 import { store } from './store.js';
 import { hashText, makeId, nowIso } from './utils.js';
 import { hasLlmKey } from './llm/client.js';
+import { llmForModelId, publicModelOptions } from './llm/models.js';
 
 export const api = Router();
 
@@ -37,10 +39,11 @@ const createTextSchema = z.object({
   rawText: z.string().trim().min(1).max(100_000),
 });
 
-const analyzeSchema = z.object({}).passthrough().optional();
+const analyzeSchema = z.object({ modelId: modelIdSchema.optional() }).passthrough().optional();
 const chatSchema = z.object({
   message: z.string().trim().min(1).max(2000),
   actor: z.string().trim().min(1).max(80).optional(),
+  modelId: modelIdSchema.optional(),
 });
 const actorSchema = z.object({ actor: z.string().trim().min(1).max(80) });
 const overrideSchema = actorSchema.extend({
@@ -89,7 +92,7 @@ api.post('/rfqs', upload.single('file'), asyncRoute(async (req, res) => {
 }));
 
 api.post('/rfqs/:id/analyze', asyncRoute(async (req, res) => {
-  analyzeSchema.parse(req.body ?? {});
+  const input = analyzeSchema.parse(req.body ?? {});
   const doc = mustGetDocument(req.params.id);
   if (doc.quotes.some((quote) => quote.status === 'APPROVED' || quote.status === 'EXPORTED')) {
     throw new AppError(409, 'QUOTE_LOCKED', '报价已审批或导出，不能重新分析；如需重做，请新建询价。');
@@ -99,7 +102,7 @@ api.post('/rfqs/:id/analyze', asyncRoute(async (req, res) => {
     customer,
     catalog: dataCache.catalog,
     rules: dataCache.pricingRules,
-    llm: config.llm,
+    llm: llmForModelId(config.llm, input?.modelId ?? DEFAULT_MODEL_ID),
   });
   res.json(store.upsertDocument(next));
 }));
@@ -111,7 +114,7 @@ api.post('/rfqs/:id/chat', asyncRoute(async (req, res) => {
     customer: mustGetCustomer(doc.customerId),
     catalog: dataCache.catalog,
     rules: dataCache.pricingRules,
-    llm: config.llm,
+    llm: llmForModelId(config.llm, input.modelId ?? DEFAULT_MODEL_ID),
     actor: input.actor,
   });
   res.json(store.upsertDocument(next));
@@ -186,7 +189,9 @@ function healthPayload() {
     mode: config.appMode,
     engine: hasLlmKey(config.llm) ? 'llm' as const : 'rules' as const,
     engineLabel: hasLlmKey(config.llm) ? 'DeepSeek 实时抽取' : '确定性规则模式',
-    model: config.llm.model,
+    model: llmForModelId(config.llm, DEFAULT_MODEL_ID).model,
+    modelId: DEFAULT_MODEL_ID,
+    availableModels: publicModelOptions(),
     catalogRevision: catalogRev,
     pricingRuleVersion: dataCache.pricingRules.version,
     sendMode: config.sendMode,

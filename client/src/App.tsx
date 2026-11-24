@@ -8,6 +8,7 @@ import type {
   RfqDocument,
   RfqLine,
 } from '../../shared/schema.js';
+import { DEFAULT_MODEL_ID, isModelId, type ModelId } from '../../shared/models.js';
 import {
   analyzeRfq,
   approveRfq,
@@ -54,6 +55,17 @@ const AUDIT_LABEL: Record<string, string> = {
   EXPORTED: '导出客户文件',
 };
 
+const MODEL_STORAGE_KEY = 'quotesentry.modelId';
+
+function readStoredModelId(): ModelId {
+  try {
+    const value = window.localStorage.getItem(MODEL_STORAGE_KEY);
+    return isModelId(value) ? value : DEFAULT_MODEL_ID;
+  } catch {
+    return DEFAULT_MODEL_ID;
+  }
+}
+
 function tabFromUrl(): Tab {
   const value = new URLSearchParams(window.location.search).get('tab');
   return value === 'chat' || value === 'approval' || value === 'audit' || value === 'catalog' ? value : 'review';
@@ -73,6 +85,7 @@ export default function App() {
   const [newOpen, setNewOpen] = useState(false);
   const [approveOpen, setApproveOpen] = useState(false);
   const [overrideTarget, setOverrideTarget] = useState<RfqLine | null>(null);
+  const [modelId, setModelId] = useState<ModelId>(readStoredModelId);
 
   useEffect(() => {
     void loadInitial();
@@ -91,6 +104,21 @@ export default function App() {
     if (selectedId) url.searchParams.set('doc', selectedId);
     window.history.replaceState(null, '', url);
   }, [data, selectedId, tab]);
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(MODEL_STORAGE_KEY, modelId);
+    } catch {
+      // The selector still works when storage is unavailable.
+    }
+  }, [modelId]);
+
+  useEffect(() => {
+    if (!data) return;
+    const options = data.health.availableModels;
+    if (options.length === 0 || options.some((option) => option.id === modelId)) return;
+    setModelId(options.find((option) => option.default)?.id ?? data.health.modelId);
+  }, [data, modelId]);
 
   const selectedDoc = data?.documents.find((doc) => doc.id === selectedId) ?? null;
   const customer = selectedDoc
@@ -126,7 +154,7 @@ export default function App() {
     if (!selectedDoc) return;
     setBusy('analyze');
     try {
-      const next = await analyzeRfq(selectedDoc.id);
+      const next = await analyzeRfq(selectedDoc.id, modelId);
       await refresh(next.id);
       setTab('review');
       setNotice({ kind: 'success', message: `审单完成：${next.lines.length} 行已处理。` });
@@ -145,6 +173,7 @@ export default function App() {
         selectedDoc.id,
         message,
         '销售 / Sales',
+        modelId,
       );
       await refresh(next.id);
       setTab('chat');
@@ -166,7 +195,7 @@ export default function App() {
           customerId: input.customerId,
           rawText: input.rawText ?? '',
         });
-      const analyzed = await analyzeRfq(created.id);
+      const analyzed = await analyzeRfq(created.id, modelId);
       await refresh(analyzed.id);
       setNewOpen(false);
       setTab('review');
@@ -245,6 +274,12 @@ export default function App() {
     setNotice({ kind: 'error', message: error instanceof Error ? error.message : String(error) });
   }
 
+  function handleModelChange(next: ModelId) {
+    setModelId(next);
+    const label = data?.health.availableModels.find((option) => option.id === next)?.label ?? next;
+    setNotice({ kind: 'info', message: `已切换到 ${label}，下次分析或对话生效。` });
+  }
+
   if (loading) {
     return (
       <div className="boot-screen">
@@ -273,6 +308,7 @@ export default function App() {
     <div className="app-shell">
       <Sidebar
         data={data}
+        modelId={modelId}
         selectedId={selectedId}
         onSelect={(id) => {
           setSelectedId(id);
@@ -284,7 +320,7 @@ export default function App() {
       />
 
       <main className="main-panel">
-        <Topbar data={data} />
+        <Topbar data={data} modelId={modelId} onModelChange={handleModelChange} />
 
         {selectedDoc ? (
           <>
@@ -382,12 +418,14 @@ export default function App() {
 
 function Sidebar(props: {
   data: BootstrapResponse;
+  modelId: ModelId;
   selectedId: string | null;
   onSelect: (id: string) => void;
   onNew: () => void;
   onReset: () => void;
   resetting: boolean;
 }) {
+  const activeModel = props.data.health.availableModels.find((option) => option.id === props.modelId);
   return (
     <aside className="sidebar">
       <div className="brand-row">
@@ -451,7 +489,7 @@ function Sidebar(props: {
           </div>
           <div className="engine-card-note">
             {props.data.health.engine === 'llm'
-              ? `${props.data.health.model} · 仅做字段抽取`
+              ? `${activeModel?.label ?? props.data.health.model} · 仅做字段抽取`
               : '未配置 DEEPSEEK_API_KEY；界面不冒充 AI'}
           </div>
         </div>
@@ -463,7 +501,16 @@ function Sidebar(props: {
   );
 }
 
-function Topbar({ data }: { data: BootstrapResponse }) {
+function Topbar(props: {
+  data: BootstrapResponse;
+  modelId: ModelId;
+  onModelChange: (modelId: ModelId) => void;
+}) {
+  const { data, modelId, onModelChange } = props;
+  const availableModels = data.health.availableModels.length > 0
+    ? data.health.availableModels
+    : [{ id: data.health.modelId, label: data.health.model, description: '', default: true }];
+
   return (
     <header className="topbar">
       <div className="breadcrumb">
@@ -472,10 +519,29 @@ function Topbar({ data }: { data: BootstrapResponse }) {
         <strong>询价审单</strong>
       </div>
       <div className="topbar-actions">
-        <div className={`engine-pill ${data.health.engine}`}>
-          <span className={`pulse ${data.health.engine}`} />
-          {data.health.engine === 'llm' ? `DeepSeek · ${data.health.model}` : '确定性规则引擎'}
-        </div>
+        {data.health.engine === 'llm' ? (
+          <div className="engine-pill llm model-picker" title="字段抽取模型；重新分析或对话时生效">
+            <span className="pulse llm" />
+            <select
+              className="model-select"
+              aria-label="选择字段抽取模型"
+              value={modelId}
+              onChange={(event) => {
+                if (isModelId(event.target.value)) onModelChange(event.target.value);
+              }}
+            >
+              {availableModels.map((option) => (
+                <option key={option.id} value={option.id}>{option.label}</option>
+              ))}
+            </select>
+            <span className="model-caret" aria-hidden="true">⌄</span>
+          </div>
+        ) : (
+          <div className="engine-pill rules">
+            <span className="pulse rules" />
+            确定性规则引擎
+          </div>
+        )}
         <div className={`send-pill ${data.health.sendMode === 'disabled' ? 'off' : ''}`}>
           <span className="lock-dot" />
           客户外发：{data.health.sendMode === 'disabled' ? '已禁用' : data.health.sendMode}

@@ -36,7 +36,8 @@ curl -s http://127.0.0.1:3001/api/health
 确认：
 
 - 浏览器打开 `http://127.0.0.1:5173/`。
-- 左下角显示 `DeepSeek 已接入 · deepseek-chat · 仅做字段抽取`。
+- 左下角显示 `DeepSeek 已接入 · DeepSeek Flash · 仅做字段抽取`。
+- 右上角模型选择器默认 `DeepSeek Flash`，可切换 `DeepSeek V4 Pro`；切换只影响下一次分析或对话。
 - 右上角显示 `客户外发：已禁用`。
 - 页面固定显示“仿真演示”提示。
 - 点击左下角“重置演示数据”，确认 `seed-08` 为未分析状态。
@@ -70,7 +71,7 @@ curl -s -X POST http://127.0.0.1:3001/api/reset-demo | jq '.documents | length'
 
 > “外贸报价员每天要把邮件和 Excel 里的询价变成可审批报价。真正难的不是写一段报价，而是判断这行能不能报、价格有没有算错、异常有没有被漏掉。QuoteSentry 做的是这段审单流程。”
 
-指出右上角的 `DeepSeek · deepseek-chat` 和 `客户外发：已禁用`。
+指出右上角的模型选择器 `DeepSeek Flash`（可切 `DeepSeek V4 Pro`）和 `客户外发：已禁用`。
 
 ### 0:20–1:15 三轮对话审单 `seed-08`
 

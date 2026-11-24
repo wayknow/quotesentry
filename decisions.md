@@ -100,7 +100,7 @@
 
 ## 17. DeepSeek 只负责字段抽取
 
-**Decision**：默认 `deepseek-chat`，OpenAI 兼容 `/chat/completions`；模型只返回字段和原文片段。`deepseek-chat` 是 DeepSeek 的服务端模型别名，代码不写死 V3 或 V4 Flash。
+**Decision**：字段抽取默认 `deepseek-flash`，可切换 `deepseek-v4-pro`，走 OpenAI 兼容 `/chat/completions`；模型只返回字段和原文片段。
 **Why**：DeepSeek 的结构化输出足够支撑抽取，但不应拥有报价事实或财务计算能力。  
 **Impact**：Zod 剥离未知字段；模型失败自动降级规则模式；Key 只在服务端读取。
 
@@ -124,7 +124,7 @@
 
 ## 21. DeepSeek 接入沿用 app_survey 的服务端直连方式
 
-**Decision**：使用 `DEEPSEEK_API_KEY`、`DEEPSEEK_BASE_URL`、`DEEPSEEK_MODEL`，由 Express 服务端直接请求 `https://api.deepseek.com/chat/completions`；与现有 `app_survey` 的请求方式保持一致。
+**Decision**：使用 `DEEPSEEK_API_KEY`、`DEEPSEEK_BASE_URL`、`DEEPSEEK_FLASH_MODEL`、`DEEPSEEK_PRO_MODEL`，由 Express 服务端直接请求 `https://api.deepseek.com/chat/completions`；与现有 `app_survey` 的请求方式保持一致。
 **Why**：已有服务端已验证这条路可用，统一变量名和调用方式能减少部署时的配置分叉；Key 不进入浏览器也能避免泄露。
 **Impact**：保留旧 `LLM_*` 变量兼容；新增 `npm run test:deepseek` 用于配置真实 Key 后验证端点和鉴权。
 
@@ -170,3 +170,16 @@
 - 人工补充字段写入 `evidence.kind = "human"` 与 `CHAT_UPDATE` 审计事件。
 - 已审批报价锁定，后续对话不得修改规格或价格。
 - 不把聊天做成首页，也不使用定时器伪造 Agent 进度。
+
+## 25. 模型选择由服务端白名单控制
+
+**Decision**：Demo 提供 `DeepSeek Flash`（默认）与 `DeepSeek V4 Pro` 两个字段抽取模型。浏览器只传 `modelId=flash|pro`，服务端映射到 `DEEPSEEK_FLASH_MODEL` / `DEEPSEEK_PRO_MODEL`；非法 ID 返回 400，不把任意模型名透传给上游。
+
+**Why**：客户会按成本、延迟和合规要求更换模型，但模型选择不能成为绕过目录、计价和审批的入口；同时避免前端持有供应商模型清单和密钥。
+
+**Impact**：
+
+- 共享注册表 `shared/models.ts` 是两个端点的唯一选项来源。
+- 模型只进入字段抽取；SKU 仍由目录硬匹配，金额仍由整数分计价，审批和导出不读取模型参数。
+- 审计事件的 `model` 记录本次实际使用的模型名，重新分析后可追溯。
+- 新增 `DEEPSEEK_FLASH_MODEL`（默认 `deepseek-flash`）和 `DEEPSEEK_PRO_MODEL`（默认 `deepseek-v4-pro`）；正式版扩模型时继续通过注册表和服务端白名单增加。

@@ -42,10 +42,18 @@ export function errorResponse(error: unknown): Response {
 }
 
 export async function readJsonObject(request: Request): Promise<Record<string, unknown>> {
-  const body = await request.json();
+  return asJsonObject(await request.json());
+}
+
+export async function readOptionalJsonObject(request: Request): Promise<Record<string, unknown>> {
+  const text = (await request.text()).trim();
+  if (!text) return {};
+  return asJsonObject(JSON.parse(text));
+}
+
+function asJsonObject(body: unknown): Record<string, unknown> {
   if (!body || typeof body !== 'object' || Array.isArray(body)) {
     throw new AppError(400, 'INVALID_JSON_OBJECT', '请求体必须是 JSON 对象。');
   }
   return body as Record<string, unknown>;
 }
-

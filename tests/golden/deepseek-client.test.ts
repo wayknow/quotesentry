@@ -13,7 +13,7 @@ describe('DeepSeek server-side request contract', () => {
   it('calls the same direct OpenAI-compatible endpoint with a server-side bearer key', async () => {
     config.llm.apiKey = 'sk-test-key';
     config.llm.baseUrl = 'https://api.deepseek.com';
-    config.llm.model = 'deepseek-chat';
+    config.llm.model = 'deepseek-v4-pro';
     config.llm.maxRetries = 0;
 
     const fetchMock = vi.fn(async (_input: RequestInfo | URL, _init?: RequestInit) => (
@@ -34,7 +34,7 @@ describe('DeepSeek server-side request contract', () => {
 
     const body = JSON.parse(String(init?.body));
     expect(body).toMatchObject({
-      model: 'deepseek-chat',
+      model: 'deepseek-v4-pro',
       stream: false,
       response_format: { type: 'json_object' },
     });

@@ -1,4 +1,5 @@
 import type { BootstrapResponse, RfqDocument } from '../../shared/schema.js';
+import { DEFAULT_MODEL_ID, type ModelId } from '../../shared/models.js';
 
 const baseUrl = import.meta.env.BASE_URL || '/';
 const API_BASE = (import.meta.env.VITE_API_BASE_URL as string | undefined)
@@ -19,14 +20,22 @@ export async function getBootstrap(): Promise<BootstrapResponse> {
   return request<BootstrapResponse>('/bootstrap');
 }
 
-export async function analyzeRfq(id: string): Promise<RfqDocument> {
-  return request<RfqDocument>(`/rfqs/${encodeURIComponent(id)}/analyze`, { method: 'POST' });
+export async function analyzeRfq(id: string, modelId: ModelId = DEFAULT_MODEL_ID): Promise<RfqDocument> {
+  return request<RfqDocument>(`/rfqs/${encodeURIComponent(id)}/analyze`, {
+    method: 'POST',
+    body: JSON.stringify({ modelId }),
+  });
 }
 
-export async function chatRfq(id: string, message: string, actor?: string): Promise<RfqDocument> {
+export async function chatRfq(
+  id: string,
+  message: string,
+  actor?: string,
+  modelId: ModelId = DEFAULT_MODEL_ID,
+): Promise<RfqDocument> {
   return request<RfqDocument>(`/rfqs/${encodeURIComponent(id)}/chat`, {
     method: 'POST',
-    body: JSON.stringify({ message, actor }),
+    body: JSON.stringify({ message, actor, modelId }),
   });
 }
 

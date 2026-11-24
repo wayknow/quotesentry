@@ -103,14 +103,15 @@ npx wrangler secret put DEEPSEEK_API_KEY
 
 ```text
 DEEPSEEK_BASE_URL=https://api.deepseek.com
-DEEPSEEK_MODEL=deepseek-chat
+DEEPSEEK_PRO_MODEL=deepseek-v4-pro
+DEEPSEEK_FLASH_MODEL=deepseek-flash
 DEEPSEEK_TIMEOUT_MS=45000
 DEEPSEEK_MAX_RETRIES=1
 ```
 
 线上已验证 `seed-08`：`PRICED / NEEDS_CLARIFICATION / NO_MATCH`，证据 26/26，客户金额 USD 465.00。Key 不进入前端、D1、日志或导出文件。
 
-`deepseek-chat` 是模型别名，不是代码里写死的 `deepseek-v3` 或 `deepseek-v4-flash`。实际后端版本由 DeepSeek 服务端对该别名的映射决定；如需固定版本，先确认服务商当前可用模型名，再修改 `DEEPSEEK_MODEL`，不要把未经确认的版本号写进参赛材料。
+Demo 页面的右上角可切换 `DeepSeek Flash`（默认）和 `DeepSeek V4 Pro`。浏览器只提交 `modelId=flash|pro`，服务端白名单分别解析为 `DEEPSEEK_FLASH_MODEL` 和 `DEEPSEEK_PRO_MODEL`；不能从浏览器传入任意模型名。`deepseek-flash` 当前对应 V4.1 Flash，`deepseek-v4-pro` 是官方 Pro 模型 ID；如需为某客户替换后端模型，只改对应环境变量，不改计价、SKU 或审批代码。旧 `DEEPSEEK_MODEL` 仍作为 Pro 的兼容回退，但新部署应使用 `DEEPSEEK_PRO_MODEL`。
 
 ## 7. 可选 Basic Auth
 
@@ -133,7 +134,7 @@ API 已通过 Cloudflare Route 在 CDN 层接管 `wayknow.tech/quotesentry/api/*
 ## 9. 验收清单
 
 - [x] `npm run check` 通过。
-- [x] `npm test`：9 files / 46 tests 通过。
+- [x] `npm test`：10 files / 51 tests 通过。
 - [x] `npm run worker:dry-run` 通过。
 - [x] 线上静态页 `/quotesentry/` 返回 200。
 - [x] 线上 `/quotesentry/api/health` 返回 200，`storage=d1`。
