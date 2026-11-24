@@ -342,6 +342,7 @@ export default function App() {
               {tab === 'chat' && (
                 <ChatTab
                   doc={selectedDoc}
+                  configuredEngine={data.health.engine}
                   busy={busy}
                   onSend={handleChat}
                   onOpenReview={() => setTab('review')}
@@ -623,6 +624,7 @@ const CHAT_PROMPTS = [
 
 function ChatTab(props: {
   doc: RfqDocument;
+  configuredEngine: BootstrapResponse['health']['engine'];
   busy: string | null;
   onSend: (message: string) => Promise<void>;
   onOpenReview: () => void;
@@ -633,6 +635,11 @@ function ChatTab(props: {
   const endRef = useRef<HTMLDivElement | null>(null);
   const turns: ChatTurn[] = props.doc.agentTurns ?? [];
   const chatBusy = props.busy === 'chat';
+  const pendingAnalysis = props.doc.lines.length === 0 && turns.length === 0;
+  const engineMode = pendingAnalysis ? props.configuredEngine : props.doc.engineMode;
+  const engineLabel = pendingAnalysis
+    ? props.configuredEngine === 'llm' ? 'DeepSeek 就绪' : '规则模式'
+    : props.doc.engineMode === 'llm' ? 'DeepSeek 抽取' : '规则模式';
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ block: 'nearest' });
@@ -663,9 +670,9 @@ function ChatTab(props: {
             <h2>对话补规格，按钮做承诺</h2>
             <p>Agent 负责理解、追问和解释；SKU、价格、毛利由目录与规则计算，审批和导出必须由人点击确认。</p>
           </div>
-          <span className={`engine-pill ${props.doc.engineMode}`}>
-            <span className={`pulse ${props.doc.engineMode}`} />
-            {props.doc.engineMode === 'llm' ? 'DeepSeek 抽取' : '规则模式'}
+          <span className={`engine-pill ${engineMode}`}>
+            <span className={`pulse ${engineMode}`} />
+            {engineLabel}
           </span>
         </div>
 

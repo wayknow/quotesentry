@@ -9,7 +9,7 @@
 - [ ] 身份证正反面扫描件已准备；未成年人材料和监护人签字已完成（如适用）。
 - [ ] 体验链接可访问：`https://wayknow.tech/quotesentry/?tab=chat&doc=seed-08`。
 - [ ] 体验二维码可扫描：`submission/assets/QuoteSentry-demo-qr-card.png`。
-- [ ] Demo 视频为 `QuoteSentry-demo-zh.mp4`，时长 2 分 43 秒。
+- [ ] Demo 视频为 `QuoteSentry-demo-zh.mp4`，时长 2 分 50 秒。
 - [ ] 产品解决方案为 3 页 PDF（建议同时附可编辑 DOCX）。
 - [ ] 提交邮件在 2026-11-30 前发出。
 

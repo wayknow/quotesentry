@@ -100,7 +100,7 @@ tests/golden/         计价、门禁、匹配、流程、导出隔离测试
 | [submission/README.md](submission/README.md) | 参赛提交材料、二维码、提报表填写稿与邮件清单 |
 | [demo/QuoteSentry-one-pager.pdf](demo/QuoteSentry-one-pager.pdf) | A4 单页路演稿（PDF，严格 1 页） |
 | [demo/QuoteSentry-one-pager.png](demo/QuoteSentry-one-pager.png) | 一页纸高清预览图 |
-| [demo/QuoteSentry-demo-zh.mp4](demo/QuoteSentry-demo-zh.mp4) | 2 分 43 秒中文旁白演示视频（含三轮对话） |
+| [demo/QuoteSentry-demo-zh.mp4](demo/QuoteSentry-demo-zh.mp4) | 2 分 50 秒中文旁白演示视频（含三轮对话） |
 | [AGENTS.md](AGENTS.md) | 面向编码 Agent 的仓库约束与自检 |
 
 ## 当前限制

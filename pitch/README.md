@@ -5,7 +5,7 @@
 - 输出：`demo/QuoteSentry-one-pager.pdf`
 - 预览：`demo/QuoteSentry-one-pager.png`
 
-版式为 A4 单页，内容对应 `docs/PITCH.md`。已用 Chrome 渲染并检查，PDF 严格 1 页、无裁切；页面口径为 46 个自动化测试、补参后 3→2 行可报价。所有客户、SKU、价格和询价均为仿真数据，不宣称真实客户 ROI。
+版式为 A4 单页，内容对应 `docs/PITCH.md`。已用 Chrome 渲染并检查，PDF 严格 1 页、无裁切；页面口径为 51 个自动化测试、补参后 3→2 行可报价。所有客户、SKU、价格和询价均为仿真数据，不宣称真实客户 ROI。
 
 重新生成 PDF：
 

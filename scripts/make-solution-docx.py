@@ -216,9 +216,9 @@ add_heading("08", "Demo 与验证证据", "补充模块")
 metrics = doc.add_table(rows=2, cols=2)
 metrics.style = "Table Grid"
 metric_data = [
-    ("2:43", "参赛视频，覆盖首轮审单、补参重算、目录外解释、审批边界、导出与审计。"),
+    ("2:50", "参赛视频，覆盖首轮审单、补参重算、目录外解释、审批边界、导出与审计。"),
     ("4 轮", "连续有效对话：审单、补镀锌、解释阻断、请求审批；对话不自动审批。"),
-    ("46 / 46", "领域、计价、对话、Worker、鉴权与导出隔离自动化测试全部通过。"),
+    ("51 / 51", "领域、计价、对话、Worker、鉴权与导出隔离自动化测试全部通过。"),
     ("26 / 26", "字段证据回指原文；无法验证的片段不进入报价。"),
 ]
 for index, (value, description) in enumerate(metric_data):
@@ -232,7 +232,7 @@ for index, (value, description) in enumerate(metric_data):
         set_run(run, 8.5, MUTED)
 
 add_para("体验入口：https://wayknow.tech/quotesentry/?tab=chat&doc=seed-08", 9.5, TEAL, True, before=8, after=2)
-add_para("线上已部署 Cloudflare Worker + D1；当前使用 DeepSeek deepseek-chat 做字段抽取与解释。演示使用仿真目录、客户和询价；客户外发已禁用。审批、导出和 override 必须由人确认。", 9, MUTED, after=4)
+add_para("线上已部署 Cloudflare Worker + D1；当前默认使用 DeepSeek Flash，可切换 DeepSeek V4 Pro，正式版可按用户需求接入更多模型。演示使用仿真目录、客户和询价；客户外发已禁用。审批、导出和 override 必须由人确认。", 9, MUTED, after=4)
 add_para("本材料不宣称真实客户、真实 ROI 或成交提升。当前证明的是业务闭环、证据链、异常阻断和审批责任；商业假设需在赛后用设计伙伴和脱敏询价验证。", 8.5, MUTED, after=0)
 
 doc.core_properties.title = "QuoteSentry 报价哨兵｜Agent 赛道产品解决方案"

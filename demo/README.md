@@ -4,14 +4,14 @@
 |---|---|
 | 文件 | `QuoteSentry-demo-zh.mp4` |
 | 字幕 | `QuoteSentry-demo-zh.srt` |
-| 时长 | 2 分 43 秒（162.67 秒） |
+| 时长 | 2 分 50 秒（169.97 秒） |
 | 画面 | 1600 × 1000，H.264，30 fps；内嵌 1440 × 900 最新页面截图 |
 | 音频 | 中文旁白，AAC 单声道，22.05 kHz |
-| 基于代码 | `5d73d3b feat: add three-round conversational RFQ review` |
-| 录制日期 | 2026-11-23 |
-| 文件大小 | 约 18 MB |
-| MP4 SHA-256 | `370989b623d923581608d1518d489cd5dd98643c8391f2b6b6d4cdbe585a0e4f` |
-| SRT SHA-256 | `d0ac6a1e88ab6d6d97180ae888b84b45f73345d938d95d0f965a57052125617e` |
+| 基于代码 | `3dc70e2 feat: add selectable DeepSeek Flash and V4 Pro models` + 本地对话页模型状态修复 |
+| 录制日期 | 2026-11-24 |
+| 文件大小 | 约 19 MB |
+| MP4 SHA-256 | `4f082f2005d0a5b4ff28abfc65cc4f0f8180f4017814724bb8756ac6210c0d81` |
+| SRT SHA-256 | `070985088e6e5bd13450faa571a053e161ca178994a689b048a667187d3702aa` |
 
 ## 内容
 
@@ -23,6 +23,7 @@
 6. 人工确认、客户 CSV/PDF 导出和发送禁用。
 7. 审计时间线中的模型、规则版本、补充证据、审批人与导出动作。
 8. “模型可替换、业务资产留在客户侧”的壁垒说明和仿真数据声明。
+9. 右上角模型选择器：默认 `DeepSeek Flash`，可切 `DeepSeek V4 Pro`，正式版可按用户需求支持更多模型。
 
 ## 边界
 
@@ -40,7 +41,7 @@
 ```bash
 npm run dev                    # 另开终端，保持 5173/3001 运行
 node scripts/capture-video-scenes.mjs
-swift -module-cache-path /tmp/swift-module-cache scripts/tts-demo-scenes.swift 0.535
+bash scripts/tts-demo-scenes.sh 210
 swiftc -module-cache-path /tmp/swift-module-cache -O scripts/render-demo-video.swift -o /tmp/render-demo-video
 /tmp/render-demo-video demo/QuoteSentry-demo-zh.mp4 demo/QuoteSentry-demo-zh.srt
 ```

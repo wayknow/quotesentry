@@ -28,7 +28,7 @@
 
 ## 参赛三项交付物
 
-1. **Demo**：`../demo/QuoteSentry-demo-zh.mp4`，2 分 43 秒；体验链接为 `https://wayknow.tech/quotesentry/?tab=chat&doc=seed-08`。
+1. **Demo**：`../demo/QuoteSentry-demo-zh.mp4`，2 分 50 秒；体验链接为 `https://wayknow.tech/quotesentry/?tab=chat&doc=seed-08`。
 2. **产品解决方案**：本目录的 8 模块 PDF / DOCX；7 个规定模块 + 1 个 Demo/验证证据模块。
 3. **身份材料**：提报表、作品自创承诺书、身份证正反面；由参赛个人或团队线下签字，不提交到公开仓库。
 
