@@ -100,6 +100,6 @@ wayknow
 | 可编辑方案 | `submission/QuoteSentry-产品解决方案-8模块.docx` |
 | 体验链接 | `https://wayknow.tech/quotesentry/?tab=chat&doc=seed-08` |
 | 二维码 | `submission/assets/QuoteSentry-demo-qr-card.png` |
-| 提报表 | 使用本目录填写稿誊写并签字 |
+| 提报表 | `submission/QuoteSentry-作品提报信息表.docx`，打印签字后扫描 |
 | 承诺书 | 使用赛事官方模板签字 |
 | 身份材料 | 放入 `submission/private/`，不要提交到公开仓库 |

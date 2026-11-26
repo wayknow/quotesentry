@@ -141,7 +141,7 @@
 
 - 8 模块产品解决方案：`submission/QuoteSentry-产品解决方案-8模块.html`
 - PDF / DOCX：`submission/QuoteSentry-产品解决方案-8模块.pdf`、`.docx`
-- 提报表填写稿：`submission/QuoteSentry-作品提报信息表-填写稿.md`
+- 提报表：`submission/QuoteSentry-作品提报信息表.docx`
 - 提交清单与邮件模板：`submission/QuoteSentry-提交清单与邮件模板.md`
 - 体验二维码：`submission/assets/QuoteSentry-demo-qr-card.png`
 
